@@ -8,3 +8,12 @@ python-multipart==0.0.9
 # Additional Requirements
 python-dotenv==1.0.1
 # Local Dependencies and Requirements not to be used in production
+
+# Commented Notes
+# - pydantic==2.9.2 is used for data validation and model definition
+# - requests==2.32.3 is used for HTTP requests
+# - python-multipart==0.0.9 is used for multipart/form-data requests
+# - python-dotenv==1.0.1 is used for loading environment variables from a .env file
+# - streamlit==1.38.0 is used for creating the Streamlit app
+# - fastapi==0.115.0 is used for creating the FastAPI app
+# - uvicorn==0.30.6 is used for running the FastAPI app
