@@ -2,7 +2,7 @@ import os
 import dotenv
 from openai import OpenAI
 from openai import RateLimitError, APIError, APIConnectionError, APITimeoutError
-from typing import List
+from typing import List, Dict
 from pinecone import Pinecone, ServerlessSpec
 import hashlib
 import time
@@ -10,13 +10,15 @@ import random
 dotenv.load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
+EMBEDDING_DIMENSION = os.getenv("EMBEDDING_DIMENSION", 1536)
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX = os.getenv("PINECONE_INDEX")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 class Embeddings:
-    def __init__(self, max_retries: int = 5, base_delay: float = 1.0, max_delay: float = 60.0):
+    def __init__(self, max_retries: int = 5, base_delay: float = 0.2, max_delay: float = 30.0):
         self.client = client
         self.max_retries = max_retries
         self.base_delay = base_delay
@@ -41,7 +43,7 @@ class Embeddings:
             try:
                 response = self.client.embeddings.create(
                     input=text, 
-                    model="text-embedding-3-small"
+                    model=EMBEDDING_MODEL
                 )
                 return response.data[0].embedding
                 
@@ -93,7 +95,7 @@ class PineconeStorage:
             print(f"Index {PINECONE_INDEX} not found. Creating...")
             self.client.create_index(
                 name=PINECONE_INDEX,
-                dimension=1536,
+                dimension=EMBEDDING_DIMENSION,
                 metric="cosine",
                 spec=ServerlessSpec(cloud="aws", region="us-east-1")
             )
@@ -126,4 +128,37 @@ class PineconeStorage:
 
     def retrieve_embedding(self, id: str) -> List[float]:
         return self.index.fetch(ids=[id]).vectors[0].values
+    
+    def query(self, embedding: List[float], top_k: int = 10, filter_dict: dict = None) -> List[Dict]:
+        """
+        Query Pinecone index for similar vectors.
+        
+        Args:
+            embedding: The query embedding vector
+            top_k: Number of results to return
+            filter_dict: Optional metadata filter
+            
+        Returns:
+            List of dictionaries with 'text', 'source_path', and 'score' keys
+        """
+        query_params = {
+            "vector": embedding,
+            "top_k": top_k,
+            "include_metadata": True
+        }
+        
+        if filter_dict is not None:
+            query_params["filter"] = filter_dict
+        
+        query_response = self.index.query(**query_params)
+        
+        results = []
+        for match in query_response.matches:
+            results.append({
+                "text": match.metadata.get("text", ""),
+                "source_path": match.metadata.get("source_path", ""),
+                "score": match.score
+            })
+        
+        return results
     

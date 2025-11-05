@@ -43,7 +43,7 @@ if __name__ == "__main__":
         for chunk in chunks:
             embedding = embeddings.embed_text(chunk)
             # get company name from text file path
-            company_name = text_file.split("/")[-2]
+            company_name = text_file.split("/")[-3]
             # get filename from text file path
             filename = text_file.split("/")[-1]
             # join strings of company name and filename to get source path
