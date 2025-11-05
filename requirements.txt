@@ -1,3 +1,4 @@
+# Base Requirements
 fastapi==0.115.0
 uvicorn==0.30.6
 streamlit==1.38.0
@@ -7,6 +8,9 @@ python-multipart==0.0.9
 
 # Additional Requirements
 python-dotenv==1.0.1
+playwright==1.45.0
+apache-airflow==3.1.0
+beautifulsoup4==4.12.3
 # Local Dependencies and Requirements not to be used in production
 
 # Commented Notes

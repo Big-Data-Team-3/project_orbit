@@ -4,3 +4,4 @@ app-env/
 
 # python cache
 __pycache__/
+.vscode/
