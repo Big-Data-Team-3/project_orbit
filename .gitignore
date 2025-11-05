@@ -7,6 +7,8 @@ __pycache__/
 env/
 venv/
 .venv
+app-env/
+data/
 
 # Data
 data/raw/*
@@ -29,3 +31,6 @@ logs/
 
 # OS
 .DS_Store
+
+# Internal Documentation
+docs/

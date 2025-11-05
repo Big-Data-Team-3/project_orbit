@@ -8,6 +8,6 @@ python-multipart==0.0.9
 # Web Scraping (used by src/scraper.py)
 requests==2.32.3
 beautifulsoup4==4.12.3
-lxml==5.1.0
+lxml>=4.9.2
 trafilatura==1.6.3
 playwright==1.40.0
