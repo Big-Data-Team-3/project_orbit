@@ -17,10 +17,7 @@ app-env/
 *.env
 
 # Data
-data/raw/*
-!data/raw/.gitkeep
-*.csv
-*.json.bak
+data/
 config/
 
 # Airflow
