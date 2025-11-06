@@ -318,12 +318,10 @@ async def generate_structured_dashboard(request: CompanyRequest):
     Generate an investor-facing diligence dashboard using structured extraction pipeline.
     
     This endpoint:
-    - Extracts structured data from scraped company website data
-    - Uses Pydantic models for validation (zero hallucination)
-    - Calls LLM with structured payload to generate dashboard
+    - Loads pre-generated payload from data/payloads/<company_id>.json (or GCS)
+    - If payload exists: Calls LLM with structured payload to generate dashboard
+    - If payload doesn't exist: Returns "Not disclosed" dashboard without LLM call
     - Returns markdown dashboard with all 8 required sections
-    
-    The dashboard is generated from structured data extracted from scraped files.
     """
     try:
         print(f"Generating structured dashboard for {request.company_name}")
@@ -332,22 +330,189 @@ async def generate_structured_dashboard(request: CompanyRequest):
         company_id = get_company_id_from_name(request.company_name)
         print(f"Company ID: {company_id}")
         
-        # Step 2: Extract structured payload
-        print("Extracting structured payload...")
-        payload = extract_company_payload(company_id)
+        # Step 2: Try to load payload from file/GCS
+        payload = None
+        bucket_name = os.getenv("GCS_BUCKET_NAME")
+        use_gcs = bucket_name is not None and get_storage_client() is not None
         
-        # Step 3: Convert payload to JSON for LLM
+        if use_gcs:
+            # Try to load from GCS
+            payload_path = f"payloads/{company_id}.json"
+            print(f"Loading payload from GCS: gs://{bucket_name}/{payload_path}")
+            
+            client = get_storage_client()
+            if client:
+                try:
+                    bucket = client.bucket(bucket_name)
+                    blob = bucket.blob(payload_path)
+                    
+                    if blob.exists():
+                        content = blob.download_as_text()
+                        payload_data = json.loads(content)
+                        # Convert dict to Payload object
+                        from models import Payload
+                        payload = Payload(**payload_data)
+                        print(f"✅ Loaded payload from GCS")
+                    else:
+                        print(f"⚠️  Payload not found in GCS: {payload_path}")
+                except Exception as e:
+                    print(f"⚠️  Failed to load payload from GCS: {e}")
+        else:
+            # Try to load from local filesystem
+            payload_path = PAYLOADS_DIR / f"{company_id}.json"
+            print(f"Loading payload from local: {payload_path}")
+            
+            if payload_path.exists():
+                try:
+                    with open(payload_path, 'r') as f:
+                        payload_data = json.load(f)
+                    from models import Payload
+                    payload = Payload(**payload_data)
+                    print(f"✅ Loaded payload from local file")
+                except Exception as e:
+                    print(f"⚠️  Failed to load payload from local file: {e}")
+            else:
+                print(f"⚠️  Payload file not found: {payload_path}")
+        
+        # Step 3: If no payload found, return "Not disclosed" dashboard
+        if payload is None:
+            print(f"⚠️  No payload found for {request.company_name}")
+            print(f"   Returning 'Not disclosed' dashboard without LLM call")
+            expected_path = f"gs://{bucket_name}/payloads/{company_id}.json" if use_gcs else str(PAYLOADS_DIR / f"{company_id}.json")
+            # Build minimal dashboard with company name only
+            dashboard = f"""## Company Overview
+
+Legal Name: Not disclosed
+Website: Not disclosed
+Headquarters: Not disclosed
+Categories: Not disclosed
+Total Raised: Not disclosed
+Last Round Name: Not disclosed
+Last Round Date: Not disclosed
+Founded Year: Not disclosed
+
+## Business Model and GTM
+
+Not disclosed.
+
+## Funding & Investor Profile
+
+Not disclosed.
+
+## Growth Momentum
+
+Not disclosed.
+
+## Visibility & Market Sentiment
+
+Not disclosed.
+
+## Risks and Challenges
+
+Not disclosed.
+
+## Outlook
+
+Not disclosed.
+
+## Disclosure Gaps
+
+## Disclosure Gaps
+
+No payload found. Expected payload at: {expected_path}
+Please ensure the payload has been generated and stored."""
+            
+            return DashboardResponse(
+                company_name=request.company_name,
+                dashboard=dashboard,
+                pipeline_type="structured"
+            )
+        
+        # Step 4: Payload exists - check if it has scraped data
+        has_scraped_data = (
+            len(payload.events) > 0 or 
+            len(payload.products) > 0 or 
+            len(payload.leadership) > 0
+        )
+        
+        if not has_scraped_data:
+            # Payload exists but has no scraped data - return "Not disclosed" dashboard
+            print(f"⚠️  Payload found but no scraped data for {request.company_name}")
+            print(f"   Returning 'Not disclosed' dashboard without LLM call to prevent hallucination")
+            
+            company = payload.company_record
+            dashboard = f"""## Company Overview
+
+Legal Name: {company.legal_name or 'Not disclosed'}
+Website: {company.website or 'Not disclosed'}
+Headquarters: {company.hq_city or 'Not disclosed'}, {company.hq_state or ''} {company.hq_country or 'Not disclosed'}
+Categories: {', '.join(company.categories) if company.categories else 'Not disclosed'}
+Total Raised: {f"${company.total_raised_usd:,.0f}" if company.total_raised_usd else "Not disclosed"}
+Last Round Name: {company.last_round_name or 'Not disclosed'}
+Last Round Date: {company.last_round_date or 'Not disclosed'}
+Founded Year: {company.founded_year or 'Not disclosed'}
+
+## Business Model and GTM
+
+Not disclosed.
+
+## Funding & Investor Profile
+
+Not disclosed.
+
+## Growth Momentum
+
+Not disclosed.
+
+## Visibility & Market Sentiment
+
+Not disclosed.
+
+## Risks and Challenges
+
+Not disclosed.
+
+## Outlook
+
+Not disclosed.
+
+## Disclosure Gaps
+
+No scraped data found in payload. Expected scraped data at: gs://{os.getenv('GCS_BUCKET_NAME', 'bucket')}/raw/{company_id}/initial_pull/
+Please ensure the scheduler has scraped and uploaded data to GCS bucket."""
+            
+            return DashboardResponse(
+                company_name=request.company_name,
+                dashboard=dashboard,
+                pipeline_type="structured"
+            )
+        
+        # Step 5: Payload exists and has scraped data - generate dashboard with LLM
+        print(f"✅ Payload found with scraped data - generating dashboard with LLM")
+        
+        # Convert payload to JSON for LLM
         payload_json = json.dumps(payload.model_dump(), indent=2, default=str)
         
-        # Step 4: Load system prompt (same as RAG)
+        # Load system prompt (same as RAG)
         system_prompt = load_system_prompt()
         
-        # Step 5: Create user prompt with structured payload
+        # Create user prompt with structured payload
         user_prompt = f"""Generate a comprehensive investor-facing diligence dashboard for {request.company_name}.
 
-Use ONLY the structured data provided in the payload below. If something is unknown or not disclosed, literally say "Not disclosed."
+🚨 CRITICAL: ZERO HALLUCINATION RULE 🚨
+- You MUST use ONLY the data explicitly provided in the Payload JSON below
+- If a field is null, empty array [], or missing → write "Not disclosed"
+- DO NOT use ANY knowledge about {request.company_name} from your training data
+- DO NOT infer, estimate, guess, or make up any information
+- If events array is empty [] → write "Not disclosed" for funding sections
+- If products array is empty [] → write "Not disclosed" for products
+- If leadership array is empty [] → write "Not disclosed" for leadership
 
-Structured Payload:
+🚨 CRITICAL: If Payload shows empty arrays [] → ALL sections must say "Not disclosed"
+🚨 CRITICAL: DO NOT use training data knowledge about {request.company_name}
+🚨 CRITICAL: Only use data explicitly present in the Payload JSON
+
+Structured Payload (from GCS bucket scraped data):
 {payload_json}
 
 IMPORTANT: You MUST include all 8 sections in this exact order:
@@ -361,8 +526,8 @@ IMPORTANT: You MUST include all 8 sections in this exact order:
 8. ## Disclosure Gaps
 
 Do not include any sections beyond these 8. If you cannot find information for a section, write "Not disclosed." for that section."""
-        
-        # Step 6: Call LLM with retry logic (same as RAG)
+
+        # Call LLM with retry logic (same as RAG)
         max_retries = 3
         dashboard = None
         

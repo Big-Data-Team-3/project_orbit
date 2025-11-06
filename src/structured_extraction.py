@@ -655,6 +655,87 @@ def list_files_from_gcs(bucket_name: str, prefix: str) -> List[str]:
         print(f"   ⚠️  Failed to list files from GCS with prefix {prefix}: {e}")
         return []
 
+def write_file_to_gcs(bucket_name: str, file_path: str, content: str) -> bool:
+    """Write a file to GCS bucket"""
+    try:
+        client = get_storage_client()
+        if not client:
+            return False
+        
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(file_path)
+        
+        blob.upload_from_string(content, content_type='application/json')
+        print(f"   ✅ Saved to GCS: gs://{bucket_name}/{file_path}")
+        return True
+    except Exception as e:
+        print(f"   ⚠️  Failed to write {file_path} to GCS: {e}")
+        return False
+
+def save_structured_data(company_id: str, structured_data: Dict[str, Any]) -> Optional[Path]:
+    """
+    Lab 5: Save structured data to data/structured/<company_id>.json
+    Supports both local filesystem and GCS bucket.
+    """
+    bucket_name = os.getenv("GCS_BUCKET_NAME")
+    use_gcs = bucket_name is not None and get_storage_client() is not None
+    
+    structured_json = json.dumps(structured_data, indent=2, default=str)
+    
+    if use_gcs:
+        # Save to GCS
+        file_path = f"structured/{company_id}.json"
+        success = write_file_to_gcs(bucket_name, file_path, structured_json)
+        if success:
+            return Path(f"gs://{bucket_name}/{file_path}")
+        else:
+            # Fallback to local if GCS fails
+            print(f"   ⚠️  GCS save failed, falling back to local filesystem")
+            use_gcs = False
+    
+    if not use_gcs:
+        # Save to local filesystem
+        output_path = Path(f"data/structured/{company_id}.json")
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        output_path.write_text(structured_json, encoding='utf-8')
+        print(f"   ✅ Saved structured data: {output_path}")
+        return output_path
+    
+    return None
+
+def save_payload_to_storage(company_id: str, payload: Payload) -> Optional[Path]:
+    """
+    Lab 6: Save payload to data/payloads/<company_id>.json
+    Supports both local filesystem and GCS bucket.
+    """
+    bucket_name = os.getenv("GCS_BUCKET_NAME")
+    use_gcs = bucket_name is not None and get_storage_client() is not None
+    
+    payload_json = json.dumps(payload.model_dump(), indent=2, default=str)
+    
+    if use_gcs:
+        # Save to GCS
+        file_path = f"payloads/{company_id}.json"
+        success = write_file_to_gcs(bucket_name, file_path, payload_json)
+        if success:
+            return Path(f"gs://{bucket_name}/{file_path}")
+        else:
+            # Fallback to local if GCS fails
+            print(f"   ⚠️  GCS save failed, falling back to local filesystem")
+            use_gcs = False
+    
+    if not use_gcs:
+        # Save to local filesystem
+        output_path = Path(f"data/payloads/{company_id}.json")
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        output_path.write_text(payload_json, encoding='utf-8')
+        print(f"   ✅ Saved payload: {output_path}")
+        return output_path
+    
+    return None
+
 
 def load_all_sources(company_id: str) -> Dict[str, Any]:
     """Load ALL sources: text, HTML, JSON, JSON-LD, structured, blogs, press, Forbes seed.
@@ -1050,6 +1131,19 @@ def extract_funding_events(sources: Dict[str, Any], company_id: str) -> Tuple[Li
         'round led', 'investment led', 'funding led', 'capital from'
     ]
     investor_context = search_all_sources(sources, investor_keywords, max_chars=4000)
+    has_scraped_data = False
+    if sources.get('files'):
+        # Check if any file has actual content (not just whitespace)
+        if any(file_data.get('content', '').strip() for file_data in sources['files'].values()):
+            has_scraped_data = True
+
+    if sources.get('html_files'):
+        if any(file_data.get('content', '').strip() for file_data in sources['html_files'].values()):
+            has_scraped_data = True
+
+    if not has_scraped_data:
+        print(f"   ⚠️  No scraped data with actual content - returning empty events")
+        return [], {k: None for k in ['total_raised_usd', 'last_round_name', 'last_round_date', 'last_disclosed_valuation_usd']}
     
     structured_funding = get_structured_data(sources, 'funding')
     structured_context = f"\n\nSTRUCTURED DATA:\n{json.dumps(structured_funding, indent=2)[:1000]}" if structured_funding else ""
@@ -1063,10 +1157,32 @@ FUNDING DETAILS:
 INVESTOR INFORMATION (search for investor names here):
 {investor_context}
 {structured_context}"""
+# NEW: Check if context is actually empty (critical check)
+    context_is_empty = (
+        not timeline.strip() and 
+        not details.strip() and 
+        not investor_context.strip() and 
+        not structured_funding
+    )
+    
+    
+# NEW: Check if context is actually empty (all empty strings)
+    if not timeline and not details and not investor_context and not structured_funding:
+        print(f"   ⚠️  Context is empty - returning empty events to prevent hallucination")
+        return [], {k: None for k in ['total_raised_usd', 'last_round_name', 'last_round_date', 'last_disclosed_valuation_usd']}
+    
     
     prompt = f"""Extract funding events for {company_id}.
 
 🚨 CRITICAL: ZERO HALLUCINATION + EXTRACT INVESTORS FROM TEXT 🚨
+
+🚨 CRITICAL: If FUNDING TIMELINE is empty → return empty list []
+🚨 CRITICAL: If FUNDING DETAILS is empty → return empty list []
+🚨 CRITICAL: If all sections above are empty → return empty list []
+🚨 CRITICAL: DO NOT use any knowledge about {company_id} from your training data
+🚨 CRITICAL: If you see empty sections → return empty list []
+
+IMPORTANT: You MUST return valid Pydantic Event objects.
 
 IMPORTANT: You MUST return valid Pydantic Event objects.
 - occurred_on MUST be valid date format: YYYY-MM-DD (e.g., "2024-09-02")
@@ -1113,6 +1229,13 @@ PYDANTIC VALIDATION RULES:
 - All fields must match Event model schema
 
 If NO events with valid dates → return empty list []
+
+🚨 CRITICAL: If FUNDING TIMELINE section above is EMPTY (no dates) → return empty list []
+🚨 CRITICAL: If FUNDING DETAILS section above is EMPTY (no text) → return empty list []
+🚨 CRITICAL: If INVESTOR INFORMATION section above is EMPTY → return empty list []
+🚨 CRITICAL: DO NOT use training data knowledge about {company_id}
+🚨 CRITICAL: If all context sections are empty → return empty list []
+
 
 {context}"""
     
@@ -1215,6 +1338,17 @@ def extract_leadership(sources: Dict[str, Any], company_id: str) -> List[Leaders
     for page_type, html_struct in sources.get('html_structured', {}).items():
         if 'team_members' in html_struct:
             html_team_members.extend(html_struct['team_members'])
+
+    has_scraped_data = (
+        len(sources.get('files', {})) > 0 or 
+        len(sources.get('html_files', {})) > 0 or
+        len(html_team_members) > 0
+    )
+    
+    if not has_scraped_data:
+        print(f"   ⚠️  No scraped data found - returning empty leadership")
+        return []
+    
     
     html_team_context = ""
     if html_team_members:
@@ -1332,6 +1466,17 @@ def extract_products(sources: Dict[str, Any], company_id: str) -> List[Product]:
             html_github_repos.extend(html_struct['github_repos'])
     
     jsonld_products = get_jsonld_value(sources, 'products')
+    has_scraped_data = (
+        len(sources.get('files', {})) > 0 or 
+        len(sources.get('html_files', {})) > 0 or
+        len(html_pricing_tiers) > 0 or
+        jsonld_products is not None
+    )
+    
+    if not has_scraped_data:
+        print(f"   ⚠️  No scraped data found - returning empty products")
+        return []
+    
     
     structured_info = f"""HTML DATA:
 - Pricing tiers: {', '.join(html_pricing_tiers) if html_pricing_tiers else 'Not found'}
@@ -1480,7 +1625,24 @@ def extract_snapshot(sources: Dict[str, Any], company_id: str, products: List[Pr
         html_locations_context = f"\n\nLOCATIONS FROM HTML:\n{', '.join(html_locations)}"
     
     product_names = [p.name for p in products]
-    
+    has_scraped_data = (
+        len(sources.get('files', {})) > 0 or 
+        len(sources.get('html_files', {})) > 0 or
+        len(html_locations) > 0
+    )
+    context_is_empty = (
+        not hiring_context.strip() and 
+        not office_context.strip() and 
+        not office_timeline.strip() and
+        not html_locations
+    )
+    if not has_scraped_data or context_is_empty:
+        print(f"   ⚠️  No scraped data or empty context - returning empty snapshot")
+        return Snapshot(
+            company_id=company_id, 
+            as_of=date.today(), 
+            provenance=create_provenance(sources, ['careers', 'homepage'])
+        )
     context = f"""HIRING:
 {hiring_context}
 
@@ -1561,6 +1723,15 @@ def extract_other_events(sources: Dict[str, Any], company_id: str) -> List[Event
         'future', 'upcoming', 'next year', 'expansion plans', 'strategy'
     ]
     outlook_context = search_all_sources(sources, outlook_keywords, max_chars=3000)
+    has_scraped_data = (
+        len(sources.get('files', {})) > 0 or 
+        len(sources.get('html_files', {})) > 0 or
+        len(sources.get('press_releases', [])) > 0
+    )
+    if not has_scraped_data:
+        print(f"   ⚠️  No scraped data found - returning empty events")
+        return []
+    
     
     context = f"""EVENT TIMELINE WITH DATES (ONLY SOURCE OF TRUTH):
 {timeline}
@@ -2031,8 +2202,31 @@ def extract_company_payload(company_id: str) -> Payload:
     visibility = extract_visibility(sources, company_id)
     print(f"   ✓ News mentions (30d): {visibility.news_mentions_30d or 'Not available'}")
     
+    # Lab 5: Save structured data before payload assembly
+    print("\n💾 Lab 5: Saving structured data...")
+    structured_data = {
+        'company_id': company_id,
+        'company': company.model_dump(),
+        'events': [e.model_dump() for e in funding_events + other_events],
+        'products': [p.model_dump() for p in products],
+        'leadership': [l.model_dump() for l in leadership],
+        'snapshot': snapshot.model_dump(),
+        'visibility': visibility.model_dump(),
+        'extracted_at': datetime.now().isoformat(),
+        'sources_summary': {
+            'text_files': len(sources['files']),
+            'html_files': len(sources['html_files']),
+            'blog_posts': len(sources['blog_posts']),
+            'press_releases': len(sources['press_releases'])
+        }
+    }
+    structured_path = save_structured_data(company_id, structured_data)
+    if structured_path:
+        print(f"   ✅ Structured data saved: {structured_path}")
+    
     all_events = funding_events + other_events
     
+    # Lab 6: Build Payload
     payload = Payload(
         company_record=company,
         events=all_events,
@@ -2106,16 +2300,15 @@ def process_companies(company_ids: List[str]):
         try:
             payload = extract_company_payload(company_id)
             
-            output_path = Path(f"data/payloads/{company_id}.json")
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            
-            output_path.write_text(
-                json.dumps(payload.model_dump(), indent=2, default=str),
-                encoding='utf-8'
-            )
-            
-            print(f"✅ Saved: {output_path}")
-            results.append({'company_id': company_id, 'status': 'success'})
+            # Lab 6: Save payload (supports both local and GCS)
+            print(f"\n💾 Lab 6: Saving payload...")
+            payload_path = save_payload_to_storage(company_id, payload)
+            if payload_path:
+                print(f"✅ Saved payload: {payload_path}")
+                results.append({'company_id': company_id, 'status': 'success', 'payload_path': str(payload_path)})
+            else:
+                print(f"⚠️  Failed to save payload")
+                results.append({'company_id': company_id, 'status': 'failed', 'error': 'Failed to save payload'})
             
         except Exception as e:
             print(f"❌ Failed: {e}")
@@ -2127,7 +2320,6 @@ def process_companies(company_ids: List[str]):
     print(f"{'='*60}")
     
     return results
-
 
 if __name__ == "__main__":
     test_companies = ["harvey", "figure", "anthropic"]
