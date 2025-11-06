@@ -7,6 +7,7 @@ python-multipart==0.0.9
 
 # Environment and utilities
 python-dotenv==1.0.1
+python-dateutil==2.9.0
 
 # Web Scraping (used by src/scraper.py)
 requests==2.32.3
@@ -15,8 +16,9 @@ lxml>=4.9.2
 trafilatura==1.6.3
 playwright==1.40.0
 
-# OpenAI and Pinecone
-openai==2.2.0
+# OpenAI. Pinecone. Instructor
+openai<2.0.0,>=1.52.0
+instructor>=1.9.0
 pinecone==7.3.0
 
 # Google Cloud Storage

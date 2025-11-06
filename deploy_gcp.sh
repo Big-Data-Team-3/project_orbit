@@ -36,6 +36,16 @@ if [ -z "$EMBEDDING_DIMENSION" ]; then
     exit 1
 fi
 
+if [ -z "$LLM_MODEL" ]; then
+    echo "⚠️  Warning: LLM_MODEL not set, using default: gpt-4o-mini"
+    export LLM_MODEL="gpt-4o-mini"
+fi
+
+if [ -z "$OPENAI_MODEL" ]; then
+    echo "⚠️  Warning: OPENAI_MODEL not set, using default: gpt-4o-mini"
+    export OPENAI_MODEL="gpt-4o-mini"
+fi
+
 if [ -z "$GCS_BUCKET_NAME" ]; then
     echo "❌ Error: GCS_BUCKET_NAME is not set"
     exit 1
@@ -83,7 +93,8 @@ gcloud run deploy project-orbit-api \
     --cpu 1 \
     --timeout 300 \
     --max-instances 5 \
-    --set-env-vars="PYTHONPATH=/app/src:/app,OPENAI_API_KEY=$OPENAI_API_KEY,PINECONE_API_KEY=$PINECONE_API_KEY,PINECONE_INDEX=$PINECONE_INDEX,EMBEDDING_MODEL=$EMBEDDING_MODEL,EMBEDDING_DIMENSION=$EMBEDDING_DIMENSION,GCS_BUCKET_NAME=$GCS_BUCKET_NAME,PROJECT_ID=$PROJECT_ID,GCS_SEED_FILE_PATH=$GCS_SEED_FILE_PATH"
+    --set-env-vars="PYTHONPATH=/app/src:/app,OPENAI_API_KEY=$OPENAI_API_KEY,PINECONE_API_KEY=$PINECONE_API_KEY,PINECONE_INDEX=$PINECONE_INDEX,EMBEDDING_MODEL=$EMBEDDING_MODEL,EMBEDDING_DIMENSION=$EMBEDDING_DIMENSION,GCS_BUCKET_NAME=$GCS_BUCKET_NAME,PROJECT_ID=$PROJECT_ID,GCS_SEED_FILE_PATH=$GCS_SEED_FILE_PATH,LLM_MODEL=$LLM_MODEL,OPENAI_MODEL=$OPENAI_MODEL"
+
 
 echo "✅ API service redeployed!"
 echo "🌐 Service URL: $(gcloud run services describe project-orbit-api --region $REGION --format='value(status.url)')"
