@@ -28,5 +28,4 @@ with col2:
     if st.button("Generate (RAG)"):
         resp = requests.post(f"{API_BASE}/dashboard/rag", json={"company_name": choice})
         st.markdown(resp.json()["dashboard"])
-        with st.expander("Retrieved context"):
-            st.json(resp.json()["retrieved"])
+        
