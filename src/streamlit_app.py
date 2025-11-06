@@ -4,7 +4,7 @@ import os
 
 API_BASE = os.getenv("API_BASE", "http://localhost:8000")
 
-st.set_page_config(page_title="PE Dashboard (AI 50)", layout="wide")
+st.set_page_config(page_title="Project Orbit", layout="wide")
 st.title("Project ORBIT – PE Dashboard for Forbes AI 50")
 
 try:
@@ -28,3 +28,5 @@ with col2:
     if st.button("Generate (RAG)"):
         resp = requests.post(f"{API_BASE}/dashboard/rag", json={"company_name": choice})
         st.markdown(resp.json()["dashboard"])
+        with st.expander("Retrieved context"):
+            st.json(resp.json()["retrieved"])

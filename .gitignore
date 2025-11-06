@@ -34,3 +34,4 @@ logs/
 
 # Internal Documentation
 docs/
+config/gcp.json

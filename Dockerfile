@@ -5,7 +5,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install minimal system dependencies
-RUN apt-get update && \
+RUN apt-get update --fix-missing || true && \
     apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
