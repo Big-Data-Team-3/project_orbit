@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  api:
+    build: .
+    container_name: project-orbit-api
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_INDEX=${PINECONE_INDEX}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-3-small}
+      - EMBEDDING_DIMENSION=${EMBEDDING_DIMENSION:-1536}
+      - PYTHONPATH=/app/src:/app
+    volumes:
+      - ./data:/app/data
+      - ./src:/app/src
+    networks:
+      - orbit-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Streamlit Frontend
+  streamlit:
+    build: .
+    container_name: project-orbit-streamlit
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE=http://project-orbit-api:8000
+      - PYTHONPATH=/app/src:/app
+    command: streamlit run src/streamlit_app.py --server.port 8501 --server.address 0.0.0.0
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+      - ./src:/app/src
+    networks:
+      - orbit-network
+    restart: unless-stopped
+
+networks:
+  orbit-network:
+    driver: bridge
