@@ -20,8 +20,8 @@ col1, col2 = st.columns(2)
 with col1:
     st.subheader("Structured pipeline")
     if st.button("Generate (Structured)"):
-        resp = requests.post(f"{API_BASE}/dashboard/structured", params={"company_id": "00000000-0000-0000-0000-000000000000"})
-        st.markdown(resp.json()["markdown"])
+        resp = requests.post(f"{API_BASE}/dashboard/structured", json={"company_name": choice})
+        st.markdown(resp.json()["dashboard"])
 
 with col2:
     st.subheader("RAG pipeline")
