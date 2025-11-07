@@ -11,15 +11,7 @@ Scheduler URL: https://us-central1-project-orbit123.cloudfunctions.net/
 Codelabs URL: 
 Video Link: 
 
-## 🎯 Problem Statement
-
-Private equity analysts currently perform manual research on Forbes AI 50 companies by visiting websites, LinkedIn pages, and press releases to collect investment signals. This process:
-- Doesn't scale to all 50 companies
-- Is difficult to refresh daily
-- Creates inconsistency across analysts
-- Is time-consuming and error-prone
-
-**Project ORBIT** solves this by automating the entire intelligence pipeline from data ingestion to dashboard generation.## 🎯 Problem Statement
+## Problem Statement
 
 Private equity analysts currently perform manual research on Forbes AI 50 companies by visiting websites, LinkedIn pages, and press releases to collect investment signals. This process:
 - Doesn't scale to all 50 companies
@@ -97,7 +89,7 @@ functions-framework --target=main_full_ingest --debug
 - **Cloud Functions** → Scrape companies and upload to GCS
 - **Cloud Storage** → Stores scraped data (`project-orbit-data-12345`)
 
-## 🏗️ Architecture
+## Architecture
 
 ![Architecture](./assets/architecture.jpeg)
 
@@ -127,7 +119,7 @@ Raw Website Data → Pydantic Models → JSON Payload → LLM → PE Dashboard
 ![Data Flow](./assets/data_flow.png)
 
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Core Technologies
 - **Backend**: Python 3.11, FastAPI, Uvicorn
