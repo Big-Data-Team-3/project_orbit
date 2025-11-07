@@ -1,0 +1,10 @@
+# Cloud Functions Configuration
+# Generated on Thu Nov  6 15:37:01 EST 2025
+
+PROJECT_ID=project-orbit123
+REGION=us-central1
+BUCKET_NAME=project-orbit-data-12345
+FULL_INGEST_URL=https://full-ingest-shxdn6phta-uc.a.run.app
+DAILY_REFRESH_URL=https://daily-refresh-shxdn6phta-uc.a.run.app
+SCRAPE_AND_INDEX_URL=https://scrape-and-index-shxdn6phta-uc.a.run.app
+STRUCTURED_EXTRACTION_URL=https://structured-extraction-shxdn6phta-uc.a.run.app

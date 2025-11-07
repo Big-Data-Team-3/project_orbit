@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv
+app-env/
+data/
+
+# Data
+data/raw/*
+!data/raw/.gitkeep
+*.csv
+*.json.bak
+
+# Airflow
+airflow.db
+airflow.cfg
+logs/
+
+# IDEs
+.vscode/
+.idea/
+
+# Environment
+.env
+*.env
+
+# OS
+.DS_Store
+
+# Internal Documentation
+docs/
+config/gcp.json

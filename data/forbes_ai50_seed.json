@@ -1,0 +1,402 @@
+[
+  {
+    "company_name": "Abridge",
+    "website": "https://www.abridge.com",
+    "linkedin": "https://www.linkedin.com/company/abridge-d1a4/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Healthcare"
+  },
+  {
+    "company_name": "Anthropic",
+    "website": "https://www.anthropic.com",
+    "linkedin": "https://www.linkedin.com/company/anthropicresearch/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Foundation Models"
+  },
+  {
+    "company_name": "Anysphere",
+    "website": "https://www.cursor.com",
+    "linkedin": "https://www.linkedin.com/company/anysphereinc/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Developer Tools"
+  },
+  {
+    "company_name": "Baseten",
+    "website": "https://www.baseten.co",
+    "linkedin": "https://www.linkedin.com/company/baseten/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Infrastructure"
+  },
+  {
+    "company_name": "Captions",
+    "website": "https://www.captions.ai",
+    "linkedin": "https://www.linkedin.com/company/captions-app/",
+    "hq_city": "New York",
+    "hq_country": "United States",
+    "category": "Creative Tools"
+  },
+  {
+    "company_name": "Clay",
+    "website": "https://www.clay.com",
+    "linkedin": "https://www.linkedin.com/company/clay-hq/",
+    "hq_city": "New York",
+    "hq_country": "United States",
+    "category": "Sales & Marketing"
+  },
+  {
+    "company_name": "Coactive AI",
+    "website": "https://www.coactive.ai",
+    "linkedin": "https://www.linkedin.com/company/coactive-ai/",
+    "hq_city": "San Jose",
+    "hq_country": "United States",
+    "category": "Infrastructure"
+  },
+  {
+    "company_name": "Codeium",
+    "website": "https://www.codeium.com",
+    "linkedin": "https://www.linkedin.com/company/codeiumdev/",
+    "hq_city": "Mountain View",
+    "hq_country": "United States",
+    "category": "Developer Tools"
+  },
+  {
+    "company_name": "Cohere",
+    "website": "https://cohere.com",
+    "linkedin": "https://www.linkedin.com/company/cohere-ai/",
+    "hq_city": "Toronto",
+    "hq_country": "Canada",
+    "category": "Foundation Models"
+  },
+  {
+    "company_name": "Crusoe",
+    "website": "https://www.crusoe.ai",
+    "linkedin": "https://www.linkedin.com/company/crusoe-energy-systems/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Infrastructure"
+  },
+  {
+    "company_name": "Databricks",
+    "website": "https://www.databricks.com",
+    "linkedin": "https://www.linkedin.com/company/databricks/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Infrastructure"
+  },
+  {
+    "company_name": "Decagon",
+    "website": "https://www.decagon.ai",
+    "linkedin": "https://www.linkedin.com/company/decagon-ai/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Customer Experience"
+  },
+  {
+    "company_name": "DeepL",
+    "website": "https://www.deepl.com",
+    "linkedin": "https://www.linkedin.com/company/deepl/",
+    "hq_city": "Cologne",
+    "hq_country": "Germany",
+    "category": "Language AI"
+  },
+  {
+    "company_name": "ElevenLabs",
+    "website": "https://elevenlabs.io",
+    "linkedin": "https://www.linkedin.com/company/elevenlabsio/",
+    "hq_city": "London",
+    "hq_country": "United Kingdom",
+    "category": "Creative Tools"
+  },
+  {
+    "company_name": "Figure AI",
+    "website": "https://www.figure.ai",
+    "linkedin": "https://www.linkedin.com/company/figure-ai/",
+    "hq_city": "San Jose",
+    "hq_country": "United States",
+    "category": "Robotics"
+  },
+  {
+    "company_name": "Fireworks AI",
+    "website": "https://fireworks.ai",
+    "linkedin": "https://www.linkedin.com/company/fireworks-ai/",
+    "hq_city": "Redwood City",
+    "hq_country": "United States",
+    "category": "Infrastructure"
+  },
+  {
+    "company_name": "Glean",
+    "website": "https://www.glean.com",
+    "linkedin": "https://www.linkedin.com/company/gleanwork/",
+    "hq_city": "Palo Alto",
+    "hq_country": "United States",
+    "category": "Enterprise"
+  },
+  {
+    "company_name": "Harvey",
+    "website": "https://www.harvey.ai",
+    "linkedin": "https://www.linkedin.com/company/harvey-ai/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Legal"
+  },
+  {
+    "company_name": "Hebbia",
+    "website": "https://www.hebbia.ai",
+    "linkedin": "https://www.linkedin.com/company/hebbia/",
+    "hq_city": "New York",
+    "hq_country": "United States",
+    "category": "Enterprise"
+  },
+  {
+    "company_name": "Hugging Face",
+    "website": "https://huggingface.co",
+    "linkedin": "https://www.linkedin.com/company/huggingface/",
+    "hq_city": "New York",
+    "hq_country": "United States",
+    "category": "Infrastructure"
+  },
+  {
+    "company_name": "Lambda",
+    "website": "https://lambdalabs.com",
+    "linkedin": "https://www.linkedin.com/company/lambda-labs/",
+    "hq_city": "San Jose",
+    "hq_country": "United States",
+    "category": "Infrastructure"
+  },
+  {
+    "company_name": "LangChain",
+    "website": "https://www.langchain.com",
+    "linkedin": "https://www.linkedin.com/company/langchain/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Developer Tools"
+  },
+  {
+    "company_name": "Luminance",
+    "website": "https://www.luminance.com",
+    "linkedin": "https://www.linkedin.com/company/luminance/",
+    "hq_city": "Cambridge",
+    "hq_country": "United Kingdom",
+    "category": "Legal"
+  },
+  {
+    "company_name": "Mercor",
+    "website": "https://www.mercor.com",
+    "linkedin": "https://www.linkedin.com/company/mercor-ai/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "HR Tech"
+  },
+  {
+    "company_name": "Midjourney",
+    "website": "https://www.midjourney.com",
+    "linkedin": "https://www.linkedin.com/company/midjourney/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Creative Tools"
+  },
+  {
+    "company_name": "Mistral AI",
+    "website": "https://mistral.ai",
+    "linkedin": "https://www.linkedin.com/company/mistral-ai/",
+    "hq_city": "Paris",
+    "hq_country": "France",
+    "category": "Foundation Models"
+  },
+  {
+    "company_name": "Notion",
+    "website": "https://www.notion.so",
+    "linkedin": "https://www.linkedin.com/company/notionhq/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Productivity"
+  },
+  {
+    "company_name": "OpenAI",
+    "website": "https://openai.com",
+    "linkedin": "https://www.linkedin.com/company/openai/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Foundation Models"
+  },
+  {
+    "company_name": "OpenEvidence",
+    "website": "https://www.openevidence.com",
+    "linkedin": "https://www.linkedin.com/company/openevidence/",
+    "hq_city": "Cambridge",
+    "hq_country": "United States",
+    "category": "Healthcare"
+  },
+  {
+    "company_name": "Perplexity AI",
+    "website": "https://www.perplexity.ai",
+    "linkedin": "https://www.linkedin.com/company/perplexityai/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Search"
+  },
+  {
+    "company_name": "Photoroom",
+    "website": "https://www.photoroom.com",
+    "linkedin": "https://www.linkedin.com/company/photoroom/",
+    "hq_city": "Paris",
+    "hq_country": "France",
+    "category": "Creative Tools"
+  },
+  {
+    "company_name": "Pika",
+    "website": "https://pika.art",
+    "linkedin": "https://www.linkedin.com/company/pika-labs/",
+    "hq_city": "Palo Alto",
+    "hq_country": "United States",
+    "category": "Creative Tools"
+  },
+  {
+    "company_name": "Runway",
+    "website": "https://runwayml.com",
+    "linkedin": "https://www.linkedin.com/company/runwayml/",
+    "hq_city": "New York",
+    "hq_country": "United States",
+    "category": "Creative Tools"
+  },
+  {
+    "company_name": "Sakana AI",
+    "website": "https://sakana.ai",
+    "linkedin": "https://www.linkedin.com/company/sakana-ai/",
+    "hq_city": "Tokyo",
+    "hq_country": "Japan",
+    "category": "Foundation Models"
+  },
+  {
+    "company_name": "SambaNova",
+    "website": "https://sambanova.ai",
+    "linkedin": "https://www.linkedin.com/company/sambanova-systems/",
+    "hq_city": "Palo Alto",
+    "hq_country": "United States",
+    "category": "Infrastructure"
+  },
+  {
+    "company_name": "Scale AI",
+    "website": "https://scale.com",
+    "linkedin": "https://www.linkedin.com/company/scale-ai/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Infrastructure"
+  },
+  {
+    "company_name": "Sierra",
+    "website": "https://sierra.ai",
+    "linkedin": "https://www.linkedin.com/company/sierra-ai/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Customer Experience"
+  },
+  {
+    "company_name": "Skild AI",
+    "website": "https://www.skild.ai",
+    "linkedin": "https://www.linkedin.com/company/skild-ai/",
+    "hq_city": "Pittsburgh",
+    "hq_country": "United States",
+    "category": "Robotics"
+  },
+  {
+    "company_name": "Snorkel AI",
+    "website": "https://snorkel.ai",
+    "linkedin": "https://www.linkedin.com/company/snorkel-ai/",
+    "hq_city": "Redwood City",
+    "hq_country": "United States",
+    "category": "Infrastructure"
+  },
+  {
+    "company_name": "Speak",
+    "website": "https://www.speak.com",
+    "linkedin": "https://www.linkedin.com/company/speak-language-learning/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Education"
+  },
+  {
+    "company_name": "StackBlitz",
+    "website": "https://stackblitz.com",
+    "linkedin": "https://www.linkedin.com/company/stackblitz/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Developer Tools"
+  },
+  {
+    "company_name": "Suno",
+    "website": "https://suno.com",
+    "linkedin": "https://www.linkedin.com/company/suno-ai/",
+    "hq_city": "Cambridge",
+    "hq_country": "United States",
+    "category": "Creative Tools"
+  },
+  {
+    "company_name": "Synthesia",
+    "website": "https://www.synthesia.io",
+    "linkedin": "https://www.linkedin.com/company/synthesia/",
+    "hq_city": "London",
+    "hq_country": "United Kingdom",
+    "category": "Creative Tools"
+  },
+  {
+    "company_name": "Thinking Machine Labs",
+    "website": "https://thinkingmachines.ai",
+    "linkedin": "https://www.linkedin.com/company/thinkingmachinesai/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Foundation Models"
+  },
+  {
+    "company_name": "Together AI",
+    "website": "https://www.together.ai",
+    "linkedin": "https://www.linkedin.com/company/together-ai/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Infrastructure"
+  },
+  {
+    "company_name": "Vannevar Labs",
+    "website": "https://www.vannevarlabs.com",
+    "linkedin": "https://www.linkedin.com/company/vannevar-labs/",
+    "hq_city": "Palo Alto",
+    "hq_country": "United States",
+    "category": "Defense"
+  },
+  {
+    "company_name": "VAST Data",
+    "website": "https://www.vastdata.com",
+    "linkedin": "https://www.linkedin.com/company/vast-data/",
+    "hq_city": "New York",
+    "hq_country": "United States",
+    "category": "Infrastructure"
+  },
+  {
+    "company_name": "World Labs",
+    "website": "https://www.worldlabs.ai",
+    "linkedin": "https://www.linkedin.com/company/world-labs-ai/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Foundation Models"
+  },
+  {
+    "company_name": "Writer",
+    "website": "https://writer.com",
+    "linkedin": "https://www.linkedin.com/company/writer/",
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "category": "Enterprise"
+  },
+  {
+    "company_name": "xAI",
+    "website": "https://x.ai",
+    "linkedin": "https://www.linkedin.com/company/xai/",
+    "hq_city": "Palo Alto",
+    "hq_country": "United States",
+    "category": "Foundation Models"
+  }
+]

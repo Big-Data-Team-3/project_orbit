@@ -1,0 +1,40 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv
+app-env/
+
+# IDEs
+.vscode/
+.idea/
+
+# Environment
+.env
+*.env
+
+# Data
+data/
+config/
+
+# Airflow
+airflow.db
+airflow.cfg
+logs/
+
+# IDEs
+.vscode/
+.idea/
+
+# Environment
+.env
+*.env
+
+# OS
+.DS_Store
+
+# Internal Documentation
+docs/
