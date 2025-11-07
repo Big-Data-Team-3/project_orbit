@@ -1,9 +1,10 @@
 # Project Orbit 🚀
 
-Application URL:
-Backend URL:
-Scheduler URL:
-
+Application URL: https://project-orbit-streamlit-267172092995.us-central1.run.app/
+Backend URL: https://project-orbit-api-267172092995.us-central1.run.app/
+Scheduler URL: https://us-central1-project-orbit123.cloudfunctions.net/
+Codelabs URL: 
+Video Link: 
 
 ## Automating Private-Equity (PE) Intelligence for the Forbes AI 50
 
