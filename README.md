@@ -1,6 +1,33 @@
 # Project ORBIT - Private Equity Intelligence for Forbes AI 50
 
-Automated system for tracking and analyzing Forbes AI 50 startups using web scraping, RAG, and structured data extraction.
+Automating Private-Equity (PE) Intelligence for the Forbes AI 50
+
+**Project ORBIT** is a comprehensive, cloud-hosted system that automates private-equity intelligence gathering and analysis for the Forbes AI 50 startups. The platform scrapes public data from company websites, processes it through two parallel generation pipelines (RAG and structured extraction), and serves investor-style diligence dashboards through a modern web interface.
+
+
+Application URL: https://project-orbit-streamlit-267172092995.us-central1.run.app/
+Backend URL: https://project-orbit-api-267172092995.us-central1.run.app/
+Scheduler URL: https://us-central1-project-orbit123.cloudfunctions.net/
+Codelabs URL: 
+Video Link: 
+
+## 🎯 Problem Statement
+
+Private equity analysts currently perform manual research on Forbes AI 50 companies by visiting websites, LinkedIn pages, and press releases to collect investment signals. This process:
+- Doesn't scale to all 50 companies
+- Is difficult to refresh daily
+- Creates inconsistency across analysts
+- Is time-consuming and error-prone
+
+**Project ORBIT** solves this by automating the entire intelligence pipeline from data ingestion to dashboard generation.## 🎯 Problem Statement
+
+Private equity analysts currently perform manual research on Forbes AI 50 companies by visiting websites, LinkedIn pages, and press releases to collect investment signals. This process:
+- Doesn't scale to all 50 companies
+- Is difficult to refresh daily
+- Creates inconsistency across analysts
+- Is time-consuming and error-prone
+
+**Project ORBIT** solves this by automating the entire intelligence pipeline from data ingestion to dashboard generation.
 
 ## Project Structure
 
@@ -77,35 +104,6 @@ functions-framework --target=main_full_ingest --debug
 - **Cloud Scheduler** → Triggers Cloud Functions via HTTP (cron)
 - **Cloud Functions** → Scrape companies and upload to GCS
 - **Cloud Storage** → Stores scraped data (`project-orbit-data-12345`)
-
-## License
-
-Academic project for DAMG7245.
-# Project Orbit 🚀
-
-Application URL: https://project-orbit-streamlit-267172092995.us-central1.run.app/
-Backend URL: https://project-orbit-api-267172092995.us-central1.run.app/
-Scheduler URL: https://us-central1-project-orbit123.cloudfunctions.net/
-Codelabs URL: 
-Video Link: 
-
-## Automating Private-Equity (PE) Intelligence for the Forbes AI 50
-
-**Project ORBIT** is a comprehensive, cloud-hosted system that automates private-equity intelligence gathering and analysis for the Forbes AI 50 startups. The platform scrapes public data from company websites, processes it through two parallel generation pipelines (RAG and structured extraction), and serves investor-style diligence dashboards through a modern web interface.
-
----
-
-## 🎯 Problem Statement
-
-Private equity analysts currently perform manual research on Forbes AI 50 companies by visiting websites, LinkedIn pages, and press releases to collect investment signals. This process:
-- Doesn't scale to all 50 companies
-- Is difficult to refresh daily
-- Creates inconsistency across analysts
-- Is time-consuming and error-prone
-
-**Project ORBIT** solves this by automating the entire intelligence pipeline from data ingestion to dashboard generation.
-
----
 
 ## 🏗️ Architecture
 
@@ -231,7 +229,7 @@ Raw Website Data → Pydantic Models → JSON Payload → LLM → PE Dashboard
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Clone & Setup
 ```bash
@@ -295,91 +293,6 @@ Both pipelines generate dashboards with 8 required sections:
 6. **Risks and Challenges**
 7. **Outlook**
 8. **Disclosure Gaps**
-
----
-
-## 🔄 Data Pipelines
-
-### Cloud Functions
-
-The system uses 4 Cloud Functions for data processing:
-
-1. **`full_ingest`** - Initial scraping of all Forbes AI 50 companies
-2. **`daily_refresh`** - Daily incremental updates for changed pages
-3. **`scrape_and_index`** - Combined scraping + RAG indexing pipeline
-4. **`structured_extraction`** - Structured data extraction with Pydantic models
-
-### Airflow DAGs
-
-Two DAGs orchestrate the data pipelines:
-
-1. **`ai50_full_ingest_dag.py`** - One-time full load (`@once` schedule)
-2. **`ai50_daily_refresh_dag.py`** - Daily refresh (`0 3 * * *` schedule)
-
-### Usage Examples
-
-#### Full Ingest (All Companies)
-```bash
-curl -X POST "https://full-ingest-{hash}-uc.a.run.app"
-```
-
-#### Scrape and Index (Batch Processing)
-```bash
-# Process companies 0-3
-curl -X POST "https://scrape-and-index-{hash}-uc.a.run.app?start=0&end=3"
-
-# Process single company
-curl -X POST "https://scrape-and-index-{hash}-uc.a.run.app?start=0&batch_size=1"
-```
-
-#### Generate Dashboard
-```bash
-curl -X POST "http://localhost:8000/dashboard/rag" \
-  -H "Content-Type: application/json" \
-  -d '{"company_name": "Anthropic"}'
-```
-
----
-
-## 📁 Project Structure
-
-```
-project_orbit/
-├── src/
-│   ├── api.py                    # FastAPI application
-│   ├── streamlit_app.py          # Streamlit frontend
-│   ├── scraper.py                # Web scraping utilities
-│   ├── rag_pipeline.py           # RAG pipeline logic
-│   ├── handle_chunking.py        # Text chunking utilities
-│   ├── services/
-│   │   ├── embeddings.py         # OpenAI embeddings + Pinecone
-│   │   ├── chunker.py           # Text chunking service
-│   │   └── __init__.py
-│   └── prompts/
-│       └── dashboard_system.md   # LLM prompt templates
-├── dags/
-│   ├── ai50_full_ingest_dag.py   # Full load Airflow DAG
-│   └── ai50_daily_refresh_dag.py # Daily refresh DAG
-├── data/
-│   ├── forbes_ai50_seed.json     # Company seed data
-│   └── raw/                      # Scraped data (local dev)
-├── config/
-│   └── gcp.json                  # GCP service account (local dev)
-├── scripts/
-│   ├── deploy_functions.sh       # Cloud Functions deployment
-│   ├── run_batch_scrape_index.sh # Batch processing scripts
-│   └── run_batch_structured_extraction.sh
-├── docs/
-│   ├── fastapi.md                # FastAPI setup guide
-│   ├── gcp_deployment_guide.md   # GCP deployment guide
-│   ├── CLOUD_FUNCTIONS_DOCUMENTATION.md # Cloud Functions guide
-│   └── ...
-├── requirements.txt              # Python dependencies
-├── Dockerfile                    # Container build instructions
-├── docker-compose.yml           # Multi-container setup
-├── deploy_gcp.sh                # GCP deployment script
-└── README.md
-```
 
 ---
 
