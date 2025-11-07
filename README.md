@@ -40,7 +40,7 @@ project_orbit/
 
 ### Lab 2 & 3: Cloud Functions + Cloud Scheduler
 
-For detailed setup instructions, see [QUICK_START_FUNCTIONS.md](QUICK_START_FUNCTIONS.md) or [CLOUD_FUNCTIONS_SETUP.md](CLOUD_FUNCTIONS_SETUP.md)
+For detailed setup instructions, see [CLOUD_FUNCTIONS_DOCUMENTATION.md](./CLOUD_FUNCTIONS_DOCUMENTATION.md)
 
 **Quick steps:**
 1. Enable APIs: `bash scripts/enable_apis.sh`
