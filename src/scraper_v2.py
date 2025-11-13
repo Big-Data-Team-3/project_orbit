@@ -1849,23 +1849,37 @@ class ComprehensiveCrawler:
                 found_jobs = find_jobs_in_embedded_data(json_data)
                 entities["jobs"].extend(found_jobs)
             
-            # 4.5. Extract team members from HTML (team/about pages)
+            # 4.5. Extract team members from HTML (ALL PAGES - not just team/about pages)
             url_lower = page_data["url"].lower()
             html = page_data.get("raw_html", "")
-            if html and any(kw in url_lower for kw in ['/team', '/about', '/leadership', '/people']):
-                team_members_html = self._extract_team_from_html(html, page_data["url"])
-                entities["team_members"].extend(team_members_html)
             
-            # 4.6. Extract products from HTML (product pages)
-            if html and any(kw in url_lower for kw in ['/product', '/products', '/platform', '/solutions']):
-                products_html = self._extract_products_from_html(html, page_data["url"])
-                entities["products"].extend(products_html)
+            # Extract team members from ALL pages (prioritize team/about pages but check all)
+            if html:
+                # Only extract if we haven't found many team members yet, OR if this is a team/about page
+                is_team_page = any(kw in url_lower for kw in ['/team', '/about', '/leadership', '/people'])
+                if is_team_page or len(entities["team_members"]) < 5:
+                    team_members_html = self._extract_team_from_html(html, page_data["url"])
+                    entities["team_members"].extend(team_members_html)
             
-            # 4.7. Extract company info from HTML (about pages)
-            if html and any(kw in url_lower for kw in ['/about', '/company']):
+            # 4.6. Extract products from HTML (ALL PAGES - not just product pages)
+            if html:
+                # Only extract if we haven't found many products yet, OR if this is a product page
+                is_product_page = any(kw in url_lower for kw in ['/product', '/products', '/platform', '/solutions'])
+                if is_product_page or len(entities["products"]) < 3:
+                    products_html = self._extract_products_from_html(html, page_data["url"])
+                    entities["products"].extend(products_html)
+            
+            # 4.7. Extract company info from HTML (ALL PAGES - prioritize about pages)
+            if html:
+                # Always try to extract company info, but prioritize about pages
+                is_about_page = any(kw in url_lower for kw in ['/about', '/company'])
                 company_info_html = self._extract_company_info_from_html(html, page_data["url"])
-                if company_info_html.get("founded_year") and not entities["company_info"]["founded_year"]:
-                    entities["company_info"]["founded_year"] = company_info_html["founded_year"]
+                
+                # Only update if we don't have the info yet, OR if this is an about page (overwrite)
+                if company_info_html.get("founded_year"):
+                    if not entities["company_info"]["founded_year"] or is_about_page:
+                        entities["company_info"]["founded_year"] = company_info_html["founded_year"]
+                
                 def _invalid_hq(value: Any) -> bool:
                     if not value:
                         return True
@@ -1874,11 +1888,16 @@ class ComprehensiveCrawler:
                     if isinstance(value, list):
                         return all(_invalid_hq(v) for v in value)
                     return False
+                
                 new_hq = company_info_html.get("headquarters")
-                if new_hq and (not entities["company_info"]["headquarters"] or _invalid_hq(entities["company_info"]["headquarters"])):
-                    entities["company_info"]["headquarters"] = new_hq
-                if company_info_html.get("description") and not entities["company_info"]["description"]:
-                    entities["company_info"]["description"] = company_info_html["description"]
+                if new_hq:
+                    if (not entities["company_info"]["headquarters"] or _invalid_hq(entities["company_info"]["headquarters"]) or is_about_page):
+                        entities["company_info"]["headquarters"] = new_hq
+                
+                if company_info_html.get("description"):
+                    if not entities["company_info"]["description"] or is_about_page:
+                        entities["company_info"]["description"] = company_info_html["description"]
+                
                 if company_info_html.get("categories"):
                     if not isinstance(entities["company_info"]["categories"], list):
                         entities["company_info"]["categories"] = []
@@ -2059,7 +2078,7 @@ class ComprehensiveCrawler:
             return None
     
     def _extract_team_from_html(self, html: str, url: str) -> List[Dict]:
-        """Extract team members from HTML"""
+        """Extract team members from HTML with strict filtering"""
         team_members = []
         try:
             soup = BeautifulSoup(html, 'lxml')
@@ -2070,6 +2089,50 @@ class ComprehensiveCrawler:
                 '[class*="team"]', '[class*="member"]', '[class*="person"]',
                 'article[class*="team"]', 'div[class*="team"]'
             ]
+            
+            # Exclude patterns (false positives)
+            exclude_keywords = [
+                'office', 'location', 'benefits', 'pto', 'perks', 'roles', 'open roles',
+                'unlimited', 'comprehensive', 'medical', 'dental', 'vision', 'insurance',
+                'stipend', 'global family', 'about us', 'for business', 'seoul', 'ljubljana',
+                'san francisco', 'korea', 'brooklyn', 'marketing', 'ops teams', 'engineering office'
+            ]
+            
+            def is_valid_team_member(name: str, role: str = None) -> bool:
+                """Check if this looks like a real team member"""
+                if not name or len(name) < 3:
+                    return False
+                name_lower = name.lower()
+                role_lower = (role or '').lower()
+                
+                # Must have at least one space (first + last name)
+                if ' ' not in name:
+                    return False
+                
+                # Exclude if matches exclude patterns
+                if any(exclude in name_lower for exclude in exclude_keywords):
+                    return False
+                if role and any(exclude in role_lower for exclude in exclude_keywords):
+                    return False
+                
+                # Exclude if it's clearly a location (starts with city/country name)
+                if any(name_lower.startswith(loc) for loc in ['speak ', 'office', 'location']):
+                    return False
+                
+                # Exclude if it's a benefit/perk
+                if name_lower in ['unlimited pto', 'open roles', 'perks', 'benefits']:
+                    return False
+                
+                # Must look like a person name (has capital letters, not all caps)
+                words = name.split()
+                if len(words) < 2 or len(words) > 4:
+                    return False
+                
+                # Check if first word is capitalized (person name pattern)
+                if not words[0][0].isupper():
+                    return False
+                
+                return True
             
             for selector in member_selectors:
                 members = soup.select(selector)
@@ -2107,19 +2170,20 @@ class ComprehensiveCrawler:
                                 if len(first_p) < 150 and not first_p.lower().startswith('http'):
                                     member_data["jobTitle"] = first_p
                         
-                        # Extract bio/description
-                        bio_tag = member.find('p', class_=lambda x: x and 'bio' in str(x).lower() if x else False)
-                        if not bio_tag:
-                            p_tags = member.find_all('p')
-                            if len(p_tags) > 1:
-                                member_data["description"] = p_tags[1].get_text().strip()[:500]
-                        
-                        # Extract LinkedIn
-                        linkedin_link = member.find('a', href=lambda x: x and 'linkedin.com' in str(x).lower() if x else False)
-                        if linkedin_link:
-                            member_data["sameAs"] = linkedin_link.get('href')
-                        
-                        if member_data["name"]:
+                        # Validate before adding
+                        if member_data["name"] and is_valid_team_member(member_data["name"], member_data["jobTitle"]):
+                            # Extract bio/description
+                            bio_tag = member.find('p', class_=lambda x: x and 'bio' in str(x).lower() if x else False)
+                            if not bio_tag:
+                                p_tags = member.find_all('p')
+                                if len(p_tags) > 1:
+                                    member_data["description"] = p_tags[1].get_text().strip()[:500]
+                            
+                            # Extract LinkedIn
+                            linkedin_link = member.find('a', href=lambda x: x and 'linkedin.com' in str(x).lower() if x else False)
+                            if linkedin_link:
+                                member_data["sameAs"] = linkedin_link.get('href')
+                            
                             team_members.append(member_data)
                     
                     if team_members:
@@ -2216,6 +2280,12 @@ class ComprehensiveCrawler:
                         continue
                     
                     if is_name(line):
+                        # Validate using the same function
+                        if not is_valid_team_member(line, pending_title):
+                            pending_name = None
+                            pending_title = None
+                            continue
+                        
                         # If we have a pending title from previous line (title-first pattern)
                         if pending_title and not any(tm["name"].lower() == line.lower() for tm in team_members):
                             team_members.append({
@@ -2231,7 +2301,7 @@ class ComprehensiveCrawler:
                         pending_name = line
                         continue
                     
-                if pending_name and not any(tm["name"].lower() == pending_name.lower() for tm in team_members):
+                if pending_name and is_valid_team_member(pending_name, pending_title) and not any(tm["name"].lower() == pending_name.lower() for tm in team_members):
                     team_members.append({
                         "name": pending_name,
                         "jobTitle": pending_title,
@@ -2283,13 +2353,39 @@ class ComprehensiveCrawler:
                     if products:
                         break
             
-            # Fallback: extract from headings on product pages
+            # Fallback: extract from headings on product pages (with strict filtering)
             if not products:
-                headings = soup.find_all(['h1', 'h2', 'h3'])
-                for heading in headings[:15]:
-                    text = heading.get_text().strip()
-                    # Skip generic headings
-                    if text and len(text) < 100 and text.lower() not in ['products', 'solutions', 'features', 'overview']:
+                # Only use fallback on actual product pages
+                url_lower = url.lower()
+                is_product_page = any(kw in url_lower for kw in ['/product', '/products', '/platform', '/solutions', '/features'])
+                
+                if is_product_page:
+                    headings = soup.find_all(['h1', 'h2', 'h3'])
+                    # Filter out non-product headings
+                    exclude_keywords = [
+                        'products', 'solutions', 'features', 'overview', 'about', 'contact',
+                        'careers', 'jobs', 'team', 'blog', 'news', 'press', 'resources',
+                        'pricing', 'plans', 'sign up', 'login', 'get started', 'learn more',
+                        'join', 'open roles', 'perks', 'benefits', 'life at', 'start learning',
+                        'come build', 'explore', 'reinvent', 'global family', 'office'
+                    ]
+                    
+                    for heading in headings[:15]:
+                        text = heading.get_text().strip()
+                        text_lower = text.lower()
+                        
+                        # Skip if it's a generic heading or matches exclude list
+                        if not text or len(text) > 100:
+                            continue
+                        if any(exclude in text_lower for exclude in exclude_keywords):
+                            continue
+                        # Skip if it looks like a sentence (has lowercase words and is too long)
+                        if len(text.split()) > 8:
+                            continue
+                        # Skip if it's clearly not a product name
+                        if any(phrase in text_lower for phrase in ['click', 'read', 'view', 'see', 'learn', 'get', 'try']):
+                            continue
+                        
                         products.append({
                             "name": text,
                             "source": "html_heading",
@@ -2323,18 +2419,34 @@ class ComprehensiveCrawler:
                         info["founded_year"] = year
                         break
             
-            # Extract headquarters
+            # Extract headquarters (with better filtering)
             hq_patterns = [
-                r'headquarters?[:\s]+([^,\n]+(?:,\s*[A-Z]{2})?)',
-                r'based\s+in\s+([^,\n]+(?:,\s*[A-Z]{2})?)',
-                r'located\s+in\s+([^,\n]+(?:,\s*[A-Z]{2})?)',
-                r'headquartered\s+in\s+([^,\n]+(?:,\s*[A-Z]{2})?)',
+                r'headquarters?[:\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?(?:,\s*[A-Z]{2})?)',
+                r'based\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?(?:,\s*[A-Z]{2})?)',
+                r'located\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?(?:,\s*[A-Z]{2})?)',
+                r'headquartered\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?(?:,\s*[A-Z]{2})?)',
             ]
             for pattern in hq_patterns:
                 match = re.search(pattern, text, re.IGNORECASE)
                 if match:
                     hq = match.group(1).strip()
-                    if len(hq) < 100:
+                    hq_lower = hq.lower()
+                    
+                    # Filter out invalid HQ values
+                    invalid_patterns = [
+                        'and international', 'can be found', 'offices', 'office',
+                        'locations', 'location', 'where', 'here', 'there',
+                        'contact', 'email', 'phone', 'address', 'visit'
+                    ]
+                    
+                    if any(invalid in hq_lower for invalid in invalid_patterns):
+                        continue
+                    
+                    # Must look like a city/state/country (not a sentence)
+                    if len(hq.split()) > 5:
+                        continue
+                    
+                    if len(hq) < 100 and len(hq) > 3:
                         info["headquarters"] = hq
                         break
             
@@ -2393,21 +2505,47 @@ class ComprehensiveCrawler:
                     if len(desc) >= 40:
                         info["description"] = desc[:1000]
             
-            # Extract categories from meta keywords
+            # Extract categories from meta keywords (with strict filtering)
             categories: List[str] = []
             meta_keywords = soup.find('meta', attrs={'name': 'keywords'})
             if meta_keywords and meta_keywords.get('content'):
                 for kw in meta_keywords['content'].split(','):
                     kw_clean = kw.strip()
-                    if kw_clean and len(kw_clean) < 50:
-                        categories.append(kw_clean)
-            # Look for inline labels like "Industry: ..."
+                    # Filter out sentence fragments
+                    if kw_clean and len(kw_clean) < 50 and len(kw_clean) > 2:
+                        kw_lower = kw_clean.lower()
+                        # Exclude common false positives
+                        if not any(exclude in kw_lower for exclude in [
+                            'most', 'profoundly', 'transformed', 'agnostic', 'has a number',
+                            'particularly', 'compelling', 'use cases', 'specification',
+                            'case studies', 'and', 'the', 'is', 'are', 'was', 'were',
+                            'language', 'learning', 'education', 'tutor', 'app', 'platform'
+                        ]):
+                            # Exclude single words that are too generic
+                            if len(kw_clean.split()) == 1 and kw_lower in ['agnostic', 'specification', 'studies', 'cases']:
+                                continue
+                            # Must be a single word or short phrase (not a sentence)
+                            if len(kw_clean.split()) <= 3:
+                                categories.append(kw_clean)
+            
+            # Look for inline labels like "Industry: ..." (with better filtering)
             if not categories:
-                category_pattern = re.compile(r'(?:industry|sector|category)[:\s]+([A-Za-z &/,-]{3,60})', re.IGNORECASE)
+                category_pattern = re.compile(r'(?:industry|sector|category)[:\s]+([A-Za-z &/,-]{3,40})', re.IGNORECASE)
                 for match in category_pattern.finditer(text):
                     value = match.group(1).strip()
-                    if value and len(value) < 80:
-                        categories.append(value)
+                    value_lower = value.lower()
+                    
+                    # Filter out sentence fragments
+                    if value and len(value) < 40 and len(value) > 2:
+                        # Exclude if it looks like a sentence (has common sentence words)
+                        if not any(sentence_word in value_lower for sentence_word in [
+                            'most', 'profoundly', 'transformed', 'has a', 'number of',
+                            'particularly', 'compelling', 'use cases', 'and', 'the', 'is', 'are'
+                        ]):
+                            # Must be short (1-3 words typically)
+                            if len(value.split()) <= 3:
+                                categories.append(value)
+            
             if categories:
                 info["categories"] = categories
         
