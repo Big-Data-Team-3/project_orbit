@@ -11,7 +11,9 @@ dotenv.load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
-EMBEDDING_DIMENSION = os.getenv("EMBEDDING_DIMENSION", 1536)
+# text-embedding-3-small produces 1536 dimensions by default
+# But can be reduced. Check your existing index dimension.
+EMBEDDING_DIMENSION = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX = os.getenv("PINECONE_INDEX")
 
@@ -32,7 +34,7 @@ class Embeddings:
             text: The text to embed
             
         Returns:
-            List[float]: The embedding vector
+            List[float]: The embedding vector (dimension matches EMBEDDING_DIMENSION)
             
         Raises:
             Exception: If all retries are exhausted
@@ -41,10 +43,17 @@ class Embeddings:
         
         for attempt in range(self.max_retries):
             try:
-                response = self.client.embeddings.create(
-                    input=text, 
-                    model=EMBEDDING_MODEL
-                )
+                # If dimension is specified and different from model default, use dimensions parameter
+                embedding_params = {
+                    "input": text,
+                    "model": EMBEDDING_MODEL
+                }
+                
+                # text-embedding-3-small default is 1536, but we can reduce it
+                if EMBEDDING_DIMENSION != 1536:
+                    embedding_params["dimensions"] = EMBEDDING_DIMENSION
+                
+                response = self.client.embeddings.create(**embedding_params)
                 return response.data[0].embedding
                 
             except (RateLimitError, APIError, APIConnectionError, APITimeoutError) as e:
@@ -103,7 +112,8 @@ class PineconeStorage:
         else:
             print(f"Index {PINECONE_INDEX} already exists")
         
-        return self.client.Index(PINECONE_INDEX)
+        self.index = self.client.Index(PINECONE_INDEX)
+        return self.index
     def store_embedding(self, text: str, embedding: List[float], id: str = None, source_path: str = None):
         """
         Store an embedding in Pinecone.
