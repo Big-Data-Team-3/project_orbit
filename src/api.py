@@ -9,12 +9,12 @@ import dotenv
 from google.cloud import storage
 from google.api_core.exceptions import NotFound
 from google.oauth2 import service_account
-from rag_pipeline import generate_dashboard, retrieve_context, load_system_prompt
+from src.rag_pipeline import generate_dashboard, retrieve_context, load_system_prompt
 from openai import OpenAI
-from services.embeddings import Embeddings
-from structured_extraction import extract_company_payload
+from src.services.embeddings import Embeddings
+from src.structured_extraction import extract_company_payload
 from urllib.parse import urlparse
-from agents.workflow import WorkflowGraph, WorkflowState, WorkflowStatus
+from src.agents.workflow import WorkflowGraph, WorkflowState, WorkflowStatus
 from datetime import datetime
 
 

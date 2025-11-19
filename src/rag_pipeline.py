@@ -1,6 +1,6 @@
 import os
 from typing import List, Dict
-from services.embeddings import PineconeStorage, Embeddings
+from src.services.embeddings import PineconeStorage, Embeddings
 from openai import OpenAI
 from pathlib import Path
 import dotenv
