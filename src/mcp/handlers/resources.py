@@ -11,13 +11,13 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from google.cloud import storage
-from mcp.models import (
+from ..models import (
     ResourceDefinition,
     ResourceListResponse,
     ResourceReadRequest,
     ResourceReadResponse,
 )
-from structured_extraction import get_storage_client
+from src.structured_extraction import get_storage_client
 
 logger = logging.getLogger(__name__)
 

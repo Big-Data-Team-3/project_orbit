@@ -13,8 +13,8 @@ import logging
 from fastapi import FastAPI, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from mcp.auth import require_auth
-from mcp.models import (
+from .auth import require_auth
+from .models import (
     ToolListResponse,
     ToolCallRequest,
     ToolCallResponse,
@@ -26,7 +26,7 @@ from mcp.models import (
     PromptGetResponse,
     MCPError,
 )
-from mcp.handlers import tools, resources, prompts
+from .handlers import tools, resources, prompts
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

@@ -8,7 +8,7 @@ Exposes prompts: dashboard system prompt and other reusable templates
 import logging
 from pathlib import Path
 from typing import Dict, Any, List, Optional
-from mcp.models import (
+from ..models import (
     PromptDefinition,
     PromptArgument,
     PromptListResponse,

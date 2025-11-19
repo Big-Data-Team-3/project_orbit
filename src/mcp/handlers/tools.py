@@ -7,13 +7,13 @@ Exposes agent tools: get_latest_structured_payload, rag_search_company, report_l
 
 import logging
 from typing import Dict, Any, List
-from agents.tools import (
+from src.agents.tools import (
     get_latest_structured_payload,
     rag_search_company,
     report_layoff_signal,
 )
-from agents.models import RiskSignal
-from mcp.models import (
+from src.agents.models import RiskSignal
+from ..models import (
     ToolDefinition,
     ToolListResponse,
     ToolCallRequest,
