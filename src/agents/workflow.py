@@ -533,7 +533,7 @@ class EvaluatorNode(WorkflowNode):
 class WorkflowGraph:
     """Graph-based workflow executor for dashboard creation."""
     
-    def __init__(self, hitl_approval_callback: Optional[Callable[[str], Awaitable[bool]]] = None):
+    def __init__(self, hitl_approval_callback: Optional[Callable[[str], Awaitable[bool]]] = None, mcp_url: Optional[str] = None, mcp_api_key: Optional[str] = None):
         """
         Initialize the workflow graph.
         
@@ -559,6 +559,13 @@ class WorkflowGraph:
         }
         
         logger.info("WorkflowGraph initialized")
+
+        # Initialize SupervisorAgent for tools
+        from .supervisor import SupervisorAgent
+        self.supervisor = SupervisorAgent(
+            mcp_url=mcp_url,
+            mcp_api_key=mcp_api_key
+        )
     
     async def execute(self, company_name: str, company_id: Optional[str] = None) -> WorkflowState:
         """
