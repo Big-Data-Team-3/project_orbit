@@ -30,6 +30,11 @@ PROMPT_REGISTRY: Dict[str, Dict[str, Any]] = {
         "description": "System prompt for generating investor-facing diligence dashboards",
         "file": "src/prompts/dashboard_system.md",
         "arguments": []
+    },
+    "pe-dashboard": {
+        "description": "8-section private equity dashboard template for investor diligence",
+        "file": "src/prompts/dashboard_system.md",
+        "arguments": []
     }
 }
 

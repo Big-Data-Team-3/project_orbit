@@ -55,6 +55,14 @@ RESOURCE_REGISTRY: Dict[str, Dict[str, Any]] = {
         "mimeType": "application/x-ndjson",
         "local_path_template": "data/risk_signals/risk_signals_{date}.jsonl",
         "requires_param": "date"
+    },
+    "ai50/companies": {
+        "name": "AI50 Company IDs",
+        "description": "List of all Forbes AI50 company IDs",
+        "mimeType": "application/json",
+        "local_path": "data/forbes_ai50_seed.json",
+        "gcs_path": "seed/forbes_ai50_seed.json",
+        "handler": "company_list"
     }
 }
 
@@ -179,7 +187,7 @@ async def read_resource(request: ResourceReadRequest) -> ResourceReadResponse:
             date = params.get("date")
             if not date:
                 raise ValueError("Missing required parameter: date")
-            
+
             project_root = _get_project_root()
             local_path = project_root / metadata["local_path_template"].format(date=date)
             if local_path.exists():
