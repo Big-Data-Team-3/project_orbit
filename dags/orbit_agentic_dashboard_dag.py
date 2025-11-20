@@ -97,7 +97,7 @@ with DAG(
     @task(execution_timeout=timedelta(hours=1))  # Allow up to 1 hour per company
     def generate_dashboard_for_company(company: dict, **context):
         """Generate agentic dashboard for a single company"""
-        from src.agents.supervisor import SupervisorAgent  # Import here to avoid timeout
+        from agents.supervisor import SupervisorAgent  # Import here to avoid timeout
         from gcs_utils import upload_string_to_gcs, save_json_to_gcs  # Import here to avoid timeout
         
         bucket_name = GCS_BUCKET_NAME or DEFAULT_BUCKET
