@@ -45,8 +45,8 @@ RESOURCE_REGISTRY: Dict[str, Dict[str, Any]] = {
         "name": "Company Payload",
         "description": "Structured payload for a company (requires company_id parameter)",
         "mimeType": "application/json",
-        "local_path_template": "data/payloads/{company_id}.json",
-        "gcs_path_template": "payloads/{company_id}.json",
+        "local_path_template": "data/version2/payloads/{company_id}.json",
+        "gcs_path_template": "version2/payloads/{company_id}.json",
         "requires_param": "company_id"
     },
     "risk_signals": {

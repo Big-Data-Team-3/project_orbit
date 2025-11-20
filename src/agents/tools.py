@@ -115,7 +115,7 @@ def _load_payload_sync(company_id: str) -> Tuple[Optional[Payload], str, bool]:
     # Prioritize GCS if bucket name is set and client is available
     if bucket_name and storage_client:
         # Try to load from GCS first
-        payload_path = f"payloads/{company_id}.json"
+        payload_path = f"version2/payloads/{company_id}.json"
         logger.info(f"Loading payload from GCS: gs://{bucket_name}/{payload_path}")
         
         try:
@@ -135,7 +135,7 @@ def _load_payload_sync(company_id: str) -> Tuple[Optional[Payload], str, bool]:
     
     # Fallback to local filesystem
     project_root = Path(__file__).resolve().parents[2]
-    payload_path = project_root / "data" / "payloads" / f"{company_id}.json"
+    payload_path = project_root / "data" / "version2" / "payloads" / f"{company_id}.json"
     logger.info(f"Loading payload from local: {payload_path}")
     
     if payload_path.exists():

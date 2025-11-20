@@ -391,7 +391,7 @@ async def generate_structured_dashboard(request: CompanyRequest):
         
         if use_gcs:
             # Try to load from GCS
-            payload_path = f"payloads/{company_id}.json"
+            payload_path = f"version2/payloads/{company_id}.json"
             print(f"Loading payload from GCS: gs://{bucket_name}/{payload_path}")
             
             client = get_storage_client()
@@ -413,7 +413,7 @@ async def generate_structured_dashboard(request: CompanyRequest):
                     print(f"⚠️  Failed to load payload from GCS: {e}")
         else:
             # Try to load from local filesystem
-            payload_path = PAYLOADS_DIR / f"{company_id}.json"
+            payload_path = PROJECT_ROOT / "data" / "version2" / "payloads" / f"{company_id}.json"
             print(f"Loading payload from local: {payload_path}")
             
             if payload_path.exists():
