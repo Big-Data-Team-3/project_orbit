@@ -226,7 +226,147 @@ class SupervisorAgent:
                 logger.debug(f"Failed to log error trace to Cloud Logging: {log_error}")
         
         return trace
-    
+
+    async def execute_workflow(
+        self,
+        company_name: str,
+        company_id: Optional[str] = None
+    ) -> dict:
+        """
+        Execute WorkflowGraph for dashboard generation.
+        
+        This method bridges SupervisorAgent and WorkflowGraph:
+        - Creates WorkflowGraph instance (reusing Supervisor's MCP configuration)
+        - Executes the workflow graph (Planner → DataGenerator → RiskDetector → HITL → Evaluator)
+        - Converts WorkflowState to ReActTrace for consistency
+        - Logs to Cloud Logging using Supervisor's logging infrastructure
+        - Returns unified format with both trace and workflow state
+        
+        Args:
+            company_name: Name of the company (e.g., "Anthropic")
+            company_id: Optional company ID (e.g., "anthropic"). If not provided, will be extracted from company_name
+            
+        Returns:
+            dict: Contains:
+                - trace: ReActTrace object (standardized format for logging/monitoring)
+                - workflow_state: WorkflowState object (detailed workflow execution info)
+                - dashboard: str (the generated dashboard markdown)
+                - risk_detected: bool (whether risks were detected)
+                - execution_path: List[str] (nodes executed: ["planner", "data_generator", ...])
+                
+        Raises:
+            Exception: If workflow execution fails
+        """
+        logger.info(f"Starting WorkflowGraph execution for {company_name} (company_id={company_id})")
+        
+        try:
+            # Import workflow (lazy import to avoid circular dependencies)
+            from .workflow import WorkflowGraph
+            
+            # Initialize workflow with MCP settings from Supervisor
+            # This reuses Supervisor's MCP client configuration
+            workflow = WorkflowGraph(
+                hitl_approval_callback=None,  # Use file-based approval (default)
+                mcp_url=self.mcp_client.base_url,
+                mcp_api_key=self.mcp_client.api_key
+            )
+            
+            logger.info(f"WorkflowGraph initialized with MCP URL: {self.mcp_client.base_url}")
+            
+            # Execute the workflow graph
+            # This runs: Planner → DataGenerator → RiskDetector → HITL (if risk) → Evaluator
+            workflow_state = await workflow.execute(company_name, company_id)
+            
+            logger.info(
+                f"WorkflowGraph execution completed for {company_name}. "
+                f"Status: {workflow_state.status.value}, "
+                f"Risk detected: {workflow_state.risk_detected}, "
+                f"Dashboard length: {len(workflow_state.dashboard) if workflow_state.dashboard else 0}"
+            )
+            
+            # Convert WorkflowState to ReActTrace for consistency
+            # This allows unified logging and monitoring
+            trace = ReActTrace(
+                query=f"Generate dashboard for {company_name}",
+                company_id=company_id or workflow_state.company_id,
+                started_at=workflow_state.started_at,
+                completed_at=workflow_state.completed_at,
+                success=workflow_state.status.value in ["completed", "approved"],
+                final_answer=workflow_state.dashboard or "Workflow completed",
+                total_steps=len(workflow_state.node_results)
+            )
+            
+            # Add workflow steps as ReAct steps for detailed trace
+            # Convert each node result to a ReActStep
+            for node_name, node_result in workflow_state.node_results.items():
+                step = ReActStep(
+                    step_number=len(trace.steps) + 1,
+                    thought=f"Executing {node_name} node",
+                    action=ActionType.FINAL_ANSWER,  # Use FINAL_ANSWER as placeholder
+                    action_input={"node_name": node_name},
+                    observation=(
+                        f"Node {node_name} completed with status {node_result.status.value}. "
+                        f"{'Output available' if node_result.output else 'No output'}"
+                    ),
+                    timestamp=node_result.timestamp,
+                    error=node_result.error
+                )
+                trace.steps.append(step)
+            
+            # Log complete trace to Cloud Logging (if enabled)
+            # This uses Supervisor's logging infrastructure
+            try:
+                log_react_trace_to_cloud(trace, severity="INFO")
+                logger.debug(f"ReAct trace logged to Cloud Logging for {company_name}")
+            except Exception as e:
+                logger.debug(f"Failed to log trace to Cloud Logging: {e}")
+            
+            # Get execution path for debugging/monitoring
+            execution_path = workflow.get_execution_path(workflow_state)
+            
+            logger.info(
+                f"Workflow execution path for {company_name}: {' → '.join(execution_path)}"
+            )
+            
+            # Return unified format
+            return {
+                "trace": trace,  # ReActTrace for standardized logging
+                "workflow_state": workflow_state,  # WorkflowState for detailed info
+                "dashboard": workflow_state.dashboard,  # The actual dashboard markdown
+                "risk_detected": workflow_state.risk_detected,  # Risk detection result
+                "risk_signals": workflow_state.risk_signals,  # List of risk signals
+                "execution_path": execution_path,  # Nodes executed: ["planner", "data_generator", ...]
+                "evaluation_score": (
+                    workflow_state.node_results.get("evaluator", {}).output
+                    if isinstance(workflow_state.node_results.get("evaluator"), type(node_result))
+                    and hasattr(workflow_state.node_results.get("evaluator"), "output")
+                    else None
+                )
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in workflow execution for {company_name}: {e}", exc_info=True)
+            
+            # Create error trace for logging
+            error_trace = ReActTrace(
+                query=f"Generate dashboard for {company_name}",
+                company_id=company_id,
+                started_at=datetime.now(),
+                completed_at=datetime.now(),
+                success=False,
+                final_answer=f"Error: {str(e)}",
+                total_steps=0
+            )
+            
+            # Log error to Cloud Logging
+            try:
+                log_react_trace_to_cloud(error_trace, severity="ERROR")
+            except Exception as log_error:
+                logger.debug(f"Failed to log error trace to Cloud Logging: {log_error}")
+            
+            # Re-raise the exception so caller can handle it
+            raise
+
     async def _think(
         self,
         query: str,
