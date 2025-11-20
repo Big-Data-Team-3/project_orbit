@@ -55,6 +55,14 @@ RESOURCE_REGISTRY: Dict[str, Dict[str, Any]] = {
         "mimeType": "application/x-ndjson",
         "local_path_template": "data/risk_signals/risk_signals_{date}.jsonl",
         "requires_param": "date"
+    },
+    "ai50/companies": {
+        "name": "AI50 Company IDs",
+        "description": "List of all Forbes AI50 company IDs",
+        "mimeType": "application/json",
+        "local_path": "data/forbes_ai50_seed.json",
+        "gcs_path": "seed/forbes_ai50_seed.json",
+        "handler": "company_list"
     }
 }
 
@@ -179,14 +187,37 @@ async def read_resource(request: ResourceReadRequest) -> ResourceReadResponse:
             date = params.get("date")
             if not date:
                 raise ValueError("Missing required parameter: date")
-            
+
             project_root = _get_project_root()
             local_path = project_root / metadata["local_path_template"].format(date=date)
             if local_path.exists():
                 content_text = local_path.read_text()
             else:
                 raise ValueError(f"Risk signals not found for date: {date}")
-        
+
+        elif resource_id == "ai50/companies":
+            # Special handler for company IDs list
+            if use_gcs:
+                client = get_storage_client()
+                bucket = client.bucket(bucket_name)
+                blob = bucket.blob(metadata["gcs_path"])
+                if blob.exists():
+                    content_text = blob.download_as_text()
+                else:
+                    raise ValueError(f"Company seed data not found in GCS: {metadata['gcs_path']}")
+            else:
+                project_root = _get_project_root()
+                local_path = project_root / metadata["local_path"]
+                if local_path.exists():
+                    content_text = local_path.read_text()
+                else:
+                    raise ValueError(f"Company seed data not found locally: {local_path}")
+
+            # Parse JSON and extract company IDs
+            seed_data = json.loads(content_text)
+            company_ids = [company["company_name"] for company in seed_data]
+            content_text = json.dumps(company_ids, indent=2)
+
         else:
             raise ValueError(f"Resource handler not implemented for: {resource_id}")
         

@@ -99,6 +99,32 @@ TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
             },
             "required": ["company_id", "event_type", "description", "severity"]
         }
+    },
+    "generate_structured_dashboard": {
+        "description": "Generate an investor-facing diligence dashboard using structured extraction pipeline",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "company_name": {
+                    "type": "string",
+                    "description": "Company name (e.g., 'Anthropic', 'Abridge')"
+                }
+            },
+            "required": ["company_name"]
+        }
+    },
+    "generate_rag_dashboard": {
+        "description": "Generate an investor-facing diligence dashboard using RAG pipeline",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "company_name": {
+                    "type": "string",
+                    "description": "Company name (e.g., 'Anthropic', 'Abridge')"
+                }
+            },
+            "required": ["company_name"]
+        }
     }
 }
 
@@ -179,13 +205,69 @@ async def call_tool(request: ToolCallRequest) -> ToolCallResponse:
                 source=request.arguments.get("source"),
                 metadata=request.arguments.get("metadata")
             )
-            
+
             result = await report_layoff_signal(signal_data)
             content = [{
                 "type": "text",
                 "text": result.model_dump_json()
             }]
-            
+
+        elif tool_name == "generate_structured_dashboard":
+            company_name = request.arguments.get("company_name")
+            if not company_name:
+                raise ValueError("Missing required argument: company_name")
+
+            # Import required modules
+            import httpx
+            import os
+
+            # Use environment variable or default to localhost
+            api_base = os.getenv("API_BASE", "http://localhost:8000")
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{api_base}/dashboard/structured",
+                    json={"company_name": company_name},
+                    timeout=60.0  # Longer timeout for dashboard generation
+                )
+
+                if response.status_code == 200:
+                    result = response.json()
+                    content = [{
+                        "type": "text",
+                        "text": result.get("dashboard", "No dashboard generated")
+                    }]
+                else:
+                    raise ValueError(f"Dashboard generation failed: {response.text}")
+
+        elif tool_name == "generate_rag_dashboard":
+            company_name = request.arguments.get("company_name")
+            if not company_name:
+                raise ValueError("Missing required argument: company_name")
+
+            # Import required modules
+            import httpx
+            import os
+
+            # Use environment variable or default to localhost
+            api_base = os.getenv("API_BASE", "http://localhost:8000")
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{api_base}/dashboard/rag",
+                    json={"company_name": company_name},
+                    timeout=60.0  # Longer timeout for dashboard generation
+                )
+
+                if response.status_code == 200:
+                    result = response.json()
+                    content = [{
+                        "type": "text",
+                        "text": result.get("dashboard", "No dashboard generated")
+                    }]
+                else:
+                    raise ValueError(f"Dashboard generation failed: {response.text}")
+
         else:
             raise ValueError(f"Tool '{tool_name}' handler not implemented")
         
