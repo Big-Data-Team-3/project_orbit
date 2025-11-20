@@ -770,8 +770,12 @@ def save_structured_data(company_id: str, structured_data: Dict[str, Any]) -> Op
     structured_json = json.dumps(structured_data, indent=2, default=str)
     
     if use_gcs:
-        # Save to GCS
-        file_path = f"structured/{company_id}.json"
+        # Check for V2_MASTER_FOLDER to use version2/structured/ structure
+        v2_master_folder = os.getenv("V2_MASTER_FOLDER", "")
+        if v2_master_folder:
+            file_path = f"{v2_master_folder}/structured/{company_id}.json"
+        else:
+            file_path = f"structured/{company_id}.json"
         success = write_file_to_gcs(bucket_name, file_path, structured_json)
         if success:
             return Path(f"gs://{bucket_name}/{file_path}")
@@ -802,8 +806,12 @@ def save_payload_to_storage(company_id: str, payload: Payload) -> Optional[Path]
     payload_json = json.dumps(payload.model_dump(), indent=2, default=str)
     
     if use_gcs:
-        # Save to GCS
-        file_path = f"payloads/{company_id}.json"
+        # Check for V2_MASTER_FOLDER to use version2/payloads/ structure
+        v2_master_folder = os.getenv("V2_MASTER_FOLDER", "")
+        if v2_master_folder:
+            file_path = f"{v2_master_folder}/payloads/{company_id}.json"
+        else:
+            file_path = f"payloads/{company_id}.json"
         success = write_file_to_gcs(bucket_name, file_path, payload_json)
         if success:
             return Path(f"gs://{bucket_name}/{file_path}")
@@ -833,12 +841,23 @@ def load_all_sources(company_id: str) -> Dict[str, Any]:
     use_gcs = bucket_name is not None and get_storage_client() is not None
     
     # Determine base path (local or GCS prefix)
-    # Updated to use comprehensive_extraction (new scraper output) instead of initial_pull
+    # Check for V2_MASTER_FOLDER environment variable for version 2 structure
+    v2_master_folder = os.getenv("V2_MASTER_FOLDER", "")
+    run_folder = os.getenv("V2_RUN_FOLDER", "comprehensive_extraction")
+    
     if use_gcs:
-        base_prefix = f"raw/{company_id}/comprehensive_extraction"
+        if v2_master_folder:
+            # Use version2/raw/{company_id}/comprehensive_extraction structure
+            base_prefix = f"{v2_master_folder}/raw/{company_id}/{run_folder}"
+        else:
+            # Default structure: raw/{company_id}/comprehensive_extraction
+            base_prefix = f"raw/{company_id}/{run_folder}"
         print(f"📂 Loading sources from GCS: gs://{bucket_name}/{base_prefix}")
     else:
-        base_path = Path(f"data/raw/{company_id}/comprehensive_extraction")
+        if v2_master_folder:
+            base_path = Path(f"data/{v2_master_folder}/raw/{company_id}/{run_folder}")
+        else:
+            base_path = Path(f"data/raw/{company_id}/{run_folder}")
         print(f"📂 Loading sources from local filesystem: {base_path}")
     
     sources = {

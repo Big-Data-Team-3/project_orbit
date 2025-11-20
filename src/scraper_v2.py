@@ -69,6 +69,13 @@ except ImportError:
 SCRAPER_VERSION = "5.0-enterprise-ats"
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
+# Timeout configuration (in milliseconds)
+NAVIGATION_TIMEOUT = 60000  # 60 seconds for page navigation
+PRIORITY_PAGE_TIMEOUT = 60000  # 60 seconds for priority pages
+CAREERS_PAGE_TIMEOUT = 60000  # 60 seconds for careers pages (can be slow)
+JOB_PAGE_TIMEOUT = 40000  # 40 seconds for individual job pages
+NETWORK_IDLE_TIMEOUT = 20000  # 20 seconds for network idle wait
+
 # Page patterns - All 12 page types from scraper.py
 PAGE_PATTERNS = {
     "homepage": ["/"],
@@ -1471,8 +1478,8 @@ class ComprehensiveCrawler:
             try:
                 page = await context.new_page()
                 logger.info(f"  📄 Crawling {page_type} page: {page_url}")
-                await page.goto(page_url, wait_until='domcontentloaded', timeout=15000)
-                await asyncio.sleep(1)  # Brief wait for content
+                await page.goto(page_url, wait_until='domcontentloaded', timeout=PRIORITY_PAGE_TIMEOUT)
+                await asyncio.sleep(0.2)  # Reduced wait for faster scraping
                 html = await page.content()
                 await page.close()
                 
@@ -1560,11 +1567,11 @@ class ComprehensiveCrawler:
                 logger.info(f"  🎯 Preloading careers page: {careers_url}")
                 # Increased timeout for slow-loading ATS pages
                 try:
-                    await page.goto(careers_url, wait_until='domcontentloaded', timeout=30000)
+                    await page.goto(careers_url, wait_until='domcontentloaded', timeout=CAREERS_PAGE_TIMEOUT)
                 except PlaywrightTimeout:
                     logger.warning(f"  ⏱️  Timeout on initial load, trying networkidle: {careers_url}")
                     try:
-                        await page.wait_for_load_state('networkidle', timeout=10000)
+                        await page.wait_for_load_state('networkidle', timeout=NETWORK_IDLE_TIMEOUT)
                     except PlaywrightTimeout:
                         logger.warning(f"  ⏱️  Network idle timeout, continuing anyway: {careers_url}")
                 html = await page.content()
@@ -1576,15 +1583,15 @@ class ComprehensiveCrawler:
                     pass
                 continue
             
-            # Wait longer for dynamic ATS content to load (especially for Ashby/Workable)
-            await asyncio.sleep(3)  # Increased wait time
+            # Wait for dynamic ATS content to load (reduced for faster scraping)
+            await asyncio.sleep(1)  # Reduced from 3s
             try:
                 await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
-                await asyncio.sleep(2)
+                await asyncio.sleep(0.5)  # Reduced from 2s
                 await page.evaluate('window.scrollTo(0, 0)')  # Scroll back up
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.3)  # Reduced from 1s
                 await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')  # Scroll down again
-                await asyncio.sleep(2)
+                await asyncio.sleep(0.5)  # Reduced from 2s
             except Exception as scroll_err:
                 # Handle navigation errors gracefully
                 if "Execution context was destroyed" in str(scroll_err) or "Target closed" in str(scroll_err):
@@ -1613,8 +1620,8 @@ class ComprehensiveCrawler:
                             # Fallback: try to navigate to iframe URL directly
                             try:
                                 iframe_page = await context.new_page()
-                                await iframe_page.goto(iframe_src, wait_until='domcontentloaded', timeout=15000)
-                                await asyncio.sleep(2)
+                                await iframe_page.goto(iframe_src, wait_until='domcontentloaded', timeout=NAVIGATION_TIMEOUT)
+                                await asyncio.sleep(0.5)  # Reduced wait for faster scraping
                                 iframe_html = await iframe_page.content()
                                 iframe_jobs = ats_extractor.extract_jobs(iframe_html, iframe_src)[1]
                                 if iframe_jobs:
@@ -1666,8 +1673,8 @@ class ComprehensiveCrawler:
                 if "client-side" in page_data["error_detected"] or "application error" in page_data["error_detected"]:
                     logger.info(f"  🔄 Retrying careers page with longer wait...")
                     try:
-                        await page.wait_for_load_state('networkidle', timeout=15000)
-                        await asyncio.sleep(5)  # Longer wait for ATS pages
+                        await page.wait_for_load_state('networkidle', timeout=NETWORK_IDLE_TIMEOUT)
+                        await asyncio.sleep(2)  # Reduced wait for faster scraping
                         try:
                             await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
                             await asyncio.sleep(2)
@@ -1748,8 +1755,8 @@ class ComprehensiveCrawler:
                 try:
                     job_page = await context.new_page()
                     logger.debug(f"  🔍 Visiting job detail: {job_url[:80]}...")
-                    await job_page.goto(job_url, wait_until='domcontentloaded', timeout=20000)  # Increased timeout
-                    await asyncio.sleep(2)  # Wait for dynamic content
+                    await job_page.goto(job_url, wait_until='domcontentloaded', timeout=JOB_PAGE_TIMEOUT)
+                    await asyncio.sleep(0.5)  # Reduced wait for faster scraping
                     job_html = await job_page.content()
                     await job_page.close()
                     
@@ -1803,7 +1810,7 @@ class ComprehensiveCrawler:
         # First, try to find RSS feeds from homepage/blog index
         try:
             homepage_page = await context.new_page()
-            await homepage_page.goto(self.base_url, wait_until='domcontentloaded', timeout=15000)
+            await homepage_page.goto(self.base_url, wait_until='domcontentloaded', timeout=NAVIGATION_TIMEOUT)
             homepage_html = await homepage_page.content()
             await homepage_page.close()
             
@@ -1825,7 +1832,7 @@ class ComprehensiveCrawler:
                     # Fetch full article content
                     try:
                         article_page = await context.new_page()
-                        await article_page.goto(article_url, wait_until='domcontentloaded', timeout=15000)
+                        await article_page.goto(article_url, wait_until='domcontentloaded', timeout=PRIORITY_PAGE_TIMEOUT)
                         try:
                             await article_page.wait_for_load_state('networkidle', timeout=5000)
                         except PlaywrightTimeout:
@@ -1872,9 +1879,9 @@ class ComprehensiveCrawler:
                     continue
                 try:
                     page = await context.new_page()
-                    await page.goto(article_url, wait_until='domcontentloaded', timeout=15000)
+                    await page.goto(article_url, wait_until='domcontentloaded', timeout=PRIORITY_PAGE_TIMEOUT)
                     try:
-                        await page.wait_for_load_state('networkidle', timeout=5000)
+                        await page.wait_for_load_state('networkidle', timeout=NETWORK_IDLE_TIMEOUT)
                     except PlaywrightTimeout:
                         pass
                     html = await page.content()
@@ -1925,8 +1932,8 @@ class ComprehensiveCrawler:
         try:
             logger.info(f"  📄 Crawling: {url[:80]}...")
             
-            # Navigate (reduced timeout for speed)
-            response = await page.goto(url, wait_until='domcontentloaded', timeout=15000)
+            # Navigate with increased timeout for slow-loading pages
+            response = await page.goto(url, wait_until='domcontentloaded', timeout=NAVIGATION_TIMEOUT)
             
             if response and response.status >= 400:
                 logger.warning(f"  ⚠️  HTTP {response.status}: {url}")
@@ -1991,8 +1998,8 @@ class ComprehensiveCrawler:
                 if "client-side" in page_data["error_detected"] or "application error" in page_data["error_detected"]:
                     logger.info(f"  🔄 Retrying with longer wait for JS rendering...")
                     try:
-                        await page.wait_for_load_state('networkidle', timeout=10000)
-                        await asyncio.sleep(3)  # Additional wait for React/Next.js hydration
+                        await page.wait_for_load_state('networkidle', timeout=NETWORK_IDLE_TIMEOUT)
+                        await asyncio.sleep(1)  # Reduced wait for faster scraping
                         try:
                             await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
                             await asyncio.sleep(1)

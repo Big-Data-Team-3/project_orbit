@@ -7,6 +7,7 @@ Used by Airflow DAGs to interact with GCS buckets.
 
 import json
 import logging
+import os
 from pathlib import Path
 from typing import List, Optional
 
@@ -15,15 +16,69 @@ from google.cloud.exceptions import NotFound
 
 logger = logging.getLogger(__name__)
 
+# Cache the client to avoid re-initialization
+_gcs_client = None
+
 
 def get_gcs_client() -> storage.Client:
     """
     Get a GCS client instance.
+    Uses service account credentials from config/gcp.json if available,
+    otherwise falls back to Application Default Credentials.
     
     Returns:
         storage.Client: Initialized GCS client
     """
-    return storage.Client()
+    global _gcs_client
+    
+    # Return cached client if available
+    if _gcs_client is not None:
+        return _gcs_client
+    
+    try:
+        project_id = os.getenv("PROJECT_ID")
+        
+        # Try to use credentials file if it exists (local/Docker development)
+        # In Airflow, the config directory is mounted at /opt/airflow/config
+        credentials_paths = [
+            Path("/opt/airflow/config/gcp.json"),  # Airflow Docker container path
+            Path(__file__).parent.parent / "config" / "gcp.json",  # Local development path
+        ]
+        
+        credentials_path = None
+        for path in credentials_paths:
+            if path.exists():
+                credentials_path = path
+                break
+        
+        if credentials_path and credentials_path.exists():
+            try:
+                from google.oauth2 import service_account
+                credentials = service_account.Credentials.from_service_account_file(
+                    str(credentials_path)
+                )
+                _gcs_client = storage.Client(project=project_id, credentials=credentials)
+                logger.info(f"✅ GCS client initialized with credentials from {credentials_path}")
+                return _gcs_client
+            except ImportError:
+                logger.warning("⚠️  google.oauth2.service_account not available, using default credentials")
+            except Exception as e:
+                logger.warning(f"⚠️  Failed to load credentials from {credentials_path}: {e}, using default credentials")
+        
+        # Fall back to Application Default Credentials (production/Cloud Run)
+        _gcs_client = storage.Client(project=project_id)
+        logger.info("✅ GCS client initialized with Application Default Credentials")
+        return _gcs_client
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to initialize GCS client: {e}")
+        # Still try to return a basic client as fallback
+        try:
+            _gcs_client = storage.Client()
+            return _gcs_client
+        except Exception as fallback_error:
+            logger.error(f"❌ Fallback GCS client initialization also failed: {fallback_error}")
+            raise
 
 
 def upload_file_to_gcs(
@@ -314,4 +369,40 @@ def save_json_to_gcs(
     except Exception as e:
         logger.error(f"Failed to save JSON to GCS: {e}")
         return False
+
+
+def read_file_from_gcs(
+    bucket_name: str,
+    file_path: str
+) -> Optional[str]:
+    """
+    Read a file from GCS bucket as a string.
+    Alias for download_string_from_gcs for compatibility.
+    
+    Args:
+        bucket_name: Name of the GCS bucket
+        file_path: Path to file in GCS
+        
+    Returns:
+        str: File content as string, or None if failed
+    """
+    return download_string_from_gcs(bucket_name, file_path)
+
+
+def list_files_from_gcs(
+    bucket_name: str,
+    prefix: str
+) -> List[str]:
+    """
+    List files in GCS bucket with given prefix.
+    Alias for list_gcs_files for compatibility.
+    
+    Args:
+        bucket_name: Name of the GCS bucket
+        prefix: Prefix to filter files (e.g., 'raw/company_id/')
+        
+    Returns:
+        List[str]: List of blob paths matching the prefix
+    """
+    return list_gcs_files(bucket_name, prefix)
 
