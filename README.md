@@ -12,10 +12,9 @@ Automating Private-Equity (PE) Intelligence for the Forbes AI 50
 - **Runs under Airflow orchestration** with containerized MCP services
 - **Pauses for Human-in-the-Loop (HITL)** review when risks are detected
 
-- [Application URL]()
-- [Backend URL]()
-- [Scheduler URL]()
-- [Codelabs URL]()
+- [Application URL](https://project-orbit-streamlit-267172092995.us-central1.run.app/)
+- [Backend URL](https://project-orbit-api-267172092995.us-central1.run.app/)
+- [Codelabs URL](https://codelabs-preview.appspot.com/?file_id=1fJQ9WLgnQXVG3YemeyStNl_OwPcw3P26Czc2PUDOOlg)
 - [Video Link]()
 
 ---
