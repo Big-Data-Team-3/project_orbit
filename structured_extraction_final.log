@@ -1,0 +1,461 @@
+⚠️  Google Cloud Storage not available. Install with: pip install google-cloud-storage google-auth
+✅ Instructor client initialized with model: gpt-4o-mini
+✅ Using Pydantic models for validation
+
+============================================================
+🚀 BATCH: 5 companies
+============================================================
+
+[1/5] anthropic
+
+============================================================
+🔍 EXTRACTING: anthropic
+🤖 Model: gpt-4o-mini
+🚫 ZERO HALLUCINATION MODE ENABLED
+============================================================
+📂 Loading all sources...
+📂 Loading sources from local filesystem: data/raw/anthropic/comprehensive_extraction
+   ✓ Loaded Forbes seed data for anthropic
+   ✅ Loaded pre-extracted entities from scraper (PRIMARY SOURCE)
+   ✓ 16 text files
+   ✓ 16 HTML files
+   ✓ 0 structured JSON files
+   ✓ 0 pages with JSON-LD
+   ✓ 0 blog posts
+   ✓ 0 press releases
+
+💰 Funding...
+   🔍 No pre-extracted funding events - parsing scraped HTML/text files (STRICT MODE - NO HALLUCINATION)
+   ⚠️  No funding events found in scraped content - returning empty (NOT DISCLOSED)
+   ✓ 0 events
+   ⚠️  Total raised: Not disclosed
+
+👥 Leadership...
+   ✅ Using 9 pre-extracted team members (NO HALLUCINATION)
+   ⚠️  Filtered false positive leadership: What We Offer
+   ⚠️  Filtered false positive leadership: The Anthropic Economic Index
+   ✓ 0 founders, 7 executives
+
+🛠️  Products...
+   ✅ Using 10 pre-extracted products (NO HALLUCINATION)
+   ⚠️  Failed to convert product Meet your thinking partner: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': '$0'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Tackle your toughest work: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': '$0'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Psychology 101 comprehensive study guide: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': '$0'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Study strategies: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': '$0'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Code: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': '$0'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Research: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': '$0'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Analyze: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': '$0'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Content strategy analysis: Performance patterns and strategic recommendations: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': '$0'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Create: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': '$0'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Cookie settings: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': '$0'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ✓ 0 products
+   ⚠️  No products found in scraped data
+
+📊 Snapshot...
+❌ Failed: 1 validation error for Snapshot
+pricing_tiers.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': '$0'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+
+[2/5] cohere
+
+============================================================
+🔍 EXTRACTING: cohere
+🤖 Model: gpt-4o-mini
+🚫 ZERO HALLUCINATION MODE ENABLED
+============================================================
+📂 Loading all sources...
+📂 Loading sources from local filesystem: data/raw/cohere/comprehensive_extraction
+   ✓ Loaded Forbes seed data for cohere
+   ✅ Loaded pre-extracted entities from scraper (PRIMARY SOURCE)
+   ✓ 56 text files
+   ✓ 56 HTML files
+   ✓ 0 structured JSON files
+   ✓ 56 pages with JSON-LD
+   ✓ 40 blog posts
+   ✓ 2 press releases
+
+💰 Funding...
+   ✅ Using 1 pre-extracted funding events (NO HALLUCINATION)
+   ⚠️  No date found for funding event, skipping: Unknown
+   ✓ 0 events
+   ⚠️  Total raised: Not disclosed
+
+👥 Leadership...
+   ✅ Using 14 pre-extracted team members (NO HALLUCINATION)
+   ✓ 3 founders, 11 executives
+
+🛠️  Products...
+   ✅ Using 6 pre-extracted products (NO HALLUCINATION)
+   ⚠️  Failed to convert product Turn possibility into production: 3 validation errors for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Enterprise', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers_public.1
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers_public.2
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Smarter work starts here: 3 validation errors for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Enterprise', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers_public.1
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers_public.2
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product The turnkey AI platform: 3 validation errors for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Enterprise', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers_public.1
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers_public.2
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product AI models built for business: 3 validation errors for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Enterprise', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers_public.1
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers_public.2
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Full-stack AI for the new era of work: 3 validation errors for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Enterprise', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers_public.1
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers_public.2
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Safe. Flexible. Built for you.: 3 validation errors for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Enterprise', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers_public.1
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers_public.2
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ✓ 0 products
+   ⚠️  No products found in scraped data
+
+📊 Snapshot...
+❌ Failed: 3 validation errors for Snapshot
+pricing_tiers.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Enterprise', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers.1
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+pricing_tiers.2
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+
+[3/5] baseten
+
+============================================================
+🔍 EXTRACTING: baseten
+🤖 Model: gpt-4o-mini
+🚫 ZERO HALLUCINATION MODE ENABLED
+============================================================
+📂 Loading all sources...
+📂 Loading sources from local filesystem: data/raw/baseten/comprehensive_extraction
+   ✓ Loaded Forbes seed data for baseten
+   ✅ Loaded pre-extracted entities from scraper (PRIMARY SOURCE)
+   ✓ 55 text files
+   ✓ 55 HTML files
+   ✓ 0 structured JSON files
+   ✓ 0 pages with JSON-LD
+   ✓ 36 blog posts
+   ✓ 0 press releases
+
+💰 Funding...
+   🔍 No pre-extracted funding events - parsing scraped HTML/text files (STRICT MODE - NO HALLUCINATION)
+   ⚠️  No funding events found in scraped content - returning empty (NOT DISCLOSED)
+   ✓ 0 events
+   ⚠️  Total raised: Not disclosed
+
+👥 Leadership...
+   ✅ Using 5 pre-extracted team members (NO HALLUCINATION)
+   ⚠️  Filtered false positive leadership: Agentic AI
+   ⚠️  Filtered false positive leadership: Model APIs
+   ⚠️  Filtered false positive leadership: Developer Experience
+   ⚠️  Filtered false positive leadership: Baseten Cloud
+   ✓ 0 founders, 1 executives
+
+🛠️  Products...
+   ✅ Using 13 pre-extracted products (NO HALLUCINATION)
+   ⚠️  Failed to convert product Dedicated inference in our cloud or yours: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Peak performance under any load: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Serve models reliably: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Lower costs at scale: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product When it’s mission-critical, 
+you shouldn’t compromise: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product The fastest inference runtime: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Cross-cloud autoscaling: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Hands-on engineering support: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Extensive model tooling: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Designed for sensitive workloads: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Flexible deployment options: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Instant access to leading models: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Llama 4 Scout: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ✓ 0 products
+   ⚠️  No products found in scraped data
+
+📊 Snapshot...
+❌ Failed: 1 validation error for Snapshot
+pricing_tiers.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Free', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+
+[4/5] codeium
+
+============================================================
+🔍 EXTRACTING: codeium
+🤖 Model: gpt-4o-mini
+🚫 ZERO HALLUCINATION MODE ENABLED
+============================================================
+📂 Loading all sources...
+📂 Loading sources from local filesystem: data/raw/codeium/comprehensive_extraction
+   ✓ Loaded Forbes seed data for codeium
+   ✅ Loaded pre-extracted entities from scraper (PRIMARY SOURCE)
+   ✓ 31 text files
+   ✓ 31 HTML files
+   ✓ 0 structured JSON files
+   ✓ 0 pages with JSON-LD
+   ✓ 8 blog posts
+   ✓ 0 press releases
+
+💰 Funding...
+   ✅ Using 1 pre-extracted funding events (NO HALLUCINATION)
+   ✓ 1 events
+   ✓ Total raised: $300,000,000.0
+
+👥 Leadership...
+   ✅ Using 1 pre-extracted team members (NO HALLUCINATION)
+   ⚠️  Filtered false positive leadership: Windsurf Reviews
+   ✓ 0 founders, 0 executives
+   ⚠️  No leadership found in scraped data
+
+🛠️  Products...
+   ✅ Using 5 pre-extracted products (NO HALLUCINATION)
+   ⚠️  Failed to convert product This page does not exist: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Popular pages: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Download Windsurf Editor: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Install Windsurf Plugin: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ⚠️  Failed to convert product Changelog: 1 validation error for Product
+pricing_tiers_public.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+   ✓ 0 products
+   ⚠️  No products found in scraped data
+
+📊 Snapshot...
+❌ Failed: 1 validation error for Snapshot
+pricing_tiers.0
+  Input should be a valid string [type=string_type, input_value={'name': 'Pro', 'price': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+
+[5/5] speak
+
+============================================================
+🔍 EXTRACTING: speak
+🤖 Model: gpt-4o-mini
+🚫 ZERO HALLUCINATION MODE ENABLED
+============================================================
+📂 Loading all sources...
+📂 Loading sources from local filesystem: data/raw/speak/comprehensive_extraction
+   ✓ Loaded Forbes seed data for speak
+   ✅ Loaded pre-extracted entities from scraper (PRIMARY SOURCE)
+   ✓ 19 text files
+   ✓ 19 HTML files
+   ✓ 0 structured JSON files
+   ✓ 0 pages with JSON-LD
+   ✓ 12 blog posts
+   ✓ 0 press releases
+
+💰 Funding...
+   ✅ Using 8 pre-extracted funding events (NO HALLUCINATION)
+   ✓ 8 events
+   ✓ Total raised: $2,000,000,000.0
+
+👥 Leadership...
+   🔍 No pre-extracted team members - parsing scraped HTML/text files (STRICT MODE - NO HALLUCINATION)
+   ✅ Extracted 2 leadership members from scraped content (STRICT MODE)
+   ✓ 2 founders, 0 executives
+
+🛠️  Products...
+   🔍 No pre-extracted products - parsing scraped HTML/text files (STRICT MODE - NO HALLUCINATION)
+   ✅ Extracted 2 products from scraped content (STRICT MODE)
+   ✓ 2 products
+
+📊 Snapshot...
+   ✅ Using pre-extracted snapshot data (NO HALLUCINATION)
+   ✓ Snapshot: hiring not disclosed
+
+📅 Events...
+   ✓ Tagged as OUTLOOK: Launch of New Languages on Speak
+   ✓ Tagged as OUTLOOK: Summer Languages Launch
+   ✓ Extracted 2 outlook statements
+   ✓ 3 events
+
+🏢 Company record...
+   ✅ Using pre-extracted company info (NO HALLUCINATION)
+   ✓ Found in text: founded 2016
+   ✓ Founded year from pre-extracted: 2016
+   ✓ Categories from pre-extracted: []
+   ✓ Using Forbes seed as fallback source
+   ✓ HQ city from Forbes: San Francisco
+   ✓ HQ country from Forbes: United States
+   ✓ Category from Forbes: ['Education']
+   ✓ Speak
+   ✓ Founded: 2016
+   ✓ HQ: San Francisco
+
+📰 Visibility...
+   ✓ News mentions (30d): Not available
+
+📰 News Articles...
+   ✅ Using 12 pre-extracted news articles (NO HALLUCINATION)
+   ✓ 12 news articles
+
+💾 Lab 5: Saving structured data...
+   ✅ Saved structured data: data/structured/speak.json
+   ✅ Structured data saved: data/structured/speak.json
+
+============================================================
+📊 DATA QUALITY SUMMARY
+============================================================
+Events: 11 total
+  └─ Funding: 8
+  └─ Other: 3
+     • other: 1
+     • product_release: 2
+
+Products: 2
+  └─ With GitHub repo: 0
+  └─ With license info: 0
+
+Leadership: 2
+  └─ Founders: 2
+  └─ Executives: 0
+  └─ With LinkedIn: 0
+  └─ With education: 0
+
+Snapshot:
+  └─ Headcount: 130
+  └─ Job openings: Not disclosed
+  └─ Engineering openings: Not disclosed
+  └─ Sales openings: Not disclosed
+  └─ Offices: 0 locations
+
+Visibility:
+  └─ News (30d): Not available
+  └─ Sentiment: 1.0
+  └─ GitHub stars: Not available
+  └─ Glassdoor: Not available
+
+📰 News Articles: 12 total
+  └─ Recent articles: 0
+============================================================
+
+
+💾 Lab 6: Saving payload...
+   ✅ Saved payload: data/payloads/speak.json
+✅ Saved payload: data/payloads/speak.json
+
+============================================================
+✅ Successful: 1/5
+============================================================

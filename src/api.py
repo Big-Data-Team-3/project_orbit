@@ -13,7 +13,7 @@ from google.oauth2 import service_account
 from src.rag_pipeline import generate_dashboard, retrieve_context, load_system_prompt
 from openai import OpenAI
 from src.services.embeddings import Embeddings
-from src.structured_extraction import extract_company_payload
+from src.structured_extraction_v2 import extract_company_payload
 from urllib.parse import urlparse
 from src.agents.workflow import WorkflowGraph, WorkflowState, WorkflowStatus
 from src.agents.supervisor import SupervisorAgent

@@ -29,7 +29,7 @@ from .models import (
 )
 from ..models import Payload
 from ..services.embeddings import Embeddings, PineconeStorage
-from ..structured_extraction import get_storage_client
+from ..structured_extraction_v2 import get_storage_client
 # endregion
 # region globals, environment variables, and logging
 dotenv.load_dotenv()

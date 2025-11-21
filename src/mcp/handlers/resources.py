@@ -17,7 +17,7 @@ from ..models import (
     ResourceReadRequest,
     ResourceReadResponse,
 )
-from src.structured_extraction import get_storage_client
+from src.structured_extraction_v2 import get_storage_client
 
 logger = logging.getLogger(__name__)
 

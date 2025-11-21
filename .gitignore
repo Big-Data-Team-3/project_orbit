@@ -33,5 +33,5 @@ logs/
 .DS_Store
 
 # Internal Documentation
-docs/
+
 config/gcp.json
