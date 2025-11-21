@@ -132,6 +132,11 @@ with DAG(
             if PROJECT_ID:
                 os.environ['PROJECT_ID'] = PROJECT_ID
             
+            # Set run_id for logging (from Airflow context)
+            dag_run_id = context.get('dag_run', {}).run_id if context else None
+            if dag_run_id:
+                os.environ['AIRFLOW_DAG_RUN_ID'] = dag_run_id
+            
             # 1. Initialize SupervisorAgent with MCP configuration
             supervisor = SupervisorAgent(
                 model="gpt-4o-mini",

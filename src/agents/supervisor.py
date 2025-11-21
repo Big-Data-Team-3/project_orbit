@@ -316,7 +316,14 @@ class SupervisorAgent:
             # Log complete trace to Cloud Logging (if enabled)
             # This uses Supervisor's logging infrastructure
             try:
-                log_react_trace_to_cloud(trace, severity="INFO")
+                # Extract run_id from environment if available (e.g., from Airflow)
+                run_id = os.getenv("AIRFLOW_DAG_RUN_ID") or os.getenv("RUN_ID")
+                log_react_trace_to_cloud(
+                    trace,
+                    severity="INFO",
+                    run_id=run_id,
+                    phase="workflow_execution"
+                )
                 logger.debug(f"ReAct trace logged to Cloud Logging for {company_name}")
             except Exception as e:
                 logger.debug(f"Failed to log trace to Cloud Logging: {e}")

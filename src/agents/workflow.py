@@ -15,6 +15,8 @@ from enum import Enum
 from typing import Dict, List, Optional, Any, Callable, Awaitable
 from pathlib import Path
 import json
+from .metrics import increment_dashboard_generated, increment_hitl_triggered, increment_dashboard_failed
+
 
 import dotenv
 from openai import OpenAI
@@ -288,6 +290,14 @@ class RiskDetectorNode(WorkflowNode):
             
             logger.info(f"   ✅ Risk detection completed: {len(unique_risks)} risks found, risk_detected={state.risk_detected}")
             logger.info(f"   📊 Next node will be: {'hitl_pause' if state.risk_detected else 'evaluator'}")
+            
+            # Increment HITL triggered metric if risk detected
+            if state.risk_detected:
+                try:
+                    from .metrics import increment_hitl_triggered
+                    increment_hitl_triggered(state.company_id)
+                except Exception as e:
+                    logger.debug(f"Failed to increment HITL metric: {e}")
 
             self.status = NodeStatus.COMPLETED
             logger.info(f"   🔄 Risk detector returning NodeResult with status {self.status}")
@@ -405,7 +415,9 @@ class HITLPauseNode(WorkflowNode):
                 output={"approved": False, "approval_id": approval_id},
                 metadata={"rejected_at": datetime.now().isoformat()}
             )
+        
     
+
     def _save_approval_request(self, request: Dict) -> None:
         """Save approval request to file."""
         project_root = Path(__file__).resolve().parents[2]
@@ -503,6 +515,14 @@ class EvaluatorNode(WorkflowNode):
 
             logger.info(f"   ✅ Evaluation complete: dashboard_complete={evaluation['dashboard_complete']}")
             logger.info(f"   📊 Missing sections: {len(missing_sections)}")
+            
+            # Increment dashboard generated metric if dashboard is complete
+            if evaluation.get('dashboard_complete') and state.dashboard:
+                try:
+                    from .metrics import increment_dashboard_generated
+                    increment_dashboard_generated(state.company_id)
+                except Exception as e:
+                    logger.debug(f"Failed to increment dashboard metric: {e}")
 
             self.status = NodeStatus.COMPLETED
             logger.info(f"   🔄 EvaluatorNode status set to {self.status}")
@@ -641,6 +661,20 @@ class WorkflowGraph:
             logger.error(f"Error in workflow execution: {e}", exc_info=True)
             state.status = WorkflowStatus.FAILED
             state.completed_at = datetime.now()
+            
+            # Increment failed metric
+            try:
+                from .metrics import increment_dashboard_failed
+                increment_dashboard_failed(state.company_id)
+            except Exception as e:
+                logger.debug(f"Failed to increment failed metric: {e}")
+        
+        # Increment workflow completed metric
+        try:
+            from .metrics import increment_workflow_completed
+            increment_workflow_completed()
+        except Exception as e:
+            logger.debug(f"Failed to increment workflow completed metric: {e}")
         
         return state
     

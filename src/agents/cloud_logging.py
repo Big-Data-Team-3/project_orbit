@@ -92,7 +92,9 @@ class CloudLoggingClient:
     def log_react_trace(
         self,
         trace: Any,  # ReActTrace from react_models
-        severity: str = "INFO"
+        severity: str = "INFO",
+        run_id: Optional[str] = None,
+        phase: Optional[str] = None
     ) -> bool:
         """
         Log a ReAct trace to Google Cloud Logging.
@@ -100,6 +102,8 @@ class CloudLoggingClient:
         Args:
             trace: ReActTrace object to log
             severity: Log severity level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+            run_id: Optional run ID (e.g., Airflow DAG run ID)
+            phase: Optional phase identifier (e.g., "workflow_execution", "dashboard_generation")
             
         Returns:
             True if logged successfully, False otherwise
@@ -110,6 +114,12 @@ class CloudLoggingClient:
         try:
             # Convert trace to dictionary for logging
             trace_dict = self._trace_to_dict(trace)
+            
+            # Add run_id and phase to trace dict if provided
+            if run_id:
+                trace_dict["run_id"] = run_id
+            if phase:
+                trace_dict["phase"] = phase
             
             # Create structured log entry
             log_entry = {
@@ -124,6 +134,12 @@ class CloudLoggingClient:
                 },
                 "json_payload": trace_dict
             }
+            
+            # Add run_id and phase to labels if provided
+            if run_id:
+                log_entry["labels"]["run_id"] = run_id
+            if phase:
+                log_entry["labels"]["phase"] = phase
             
             # Log to Cloud Logging
             self.logger.log_struct(
@@ -193,7 +209,9 @@ class CloudLoggingClient:
         step: Any,  # ReActStep from react_models
         company_id: Optional[str] = None,
         query: Optional[str] = None,
-        severity: str = "INFO"
+        severity: str = "INFO",
+        run_id: Optional[str] = None,
+        phase: Optional[str] = None
     ) -> bool:
         """
         Log an individual ReAct step to Cloud Logging.
@@ -203,6 +221,8 @@ class CloudLoggingClient:
             company_id: Optional company ID for labels
             query: Optional query for labels
             severity: Log severity level
+            run_id: Optional run ID (e.g., Airflow DAG run ID)
+            phase: Optional phase identifier (e.g., "planner", "data_generator", "risk_detector")
             
         Returns:
             True if logged successfully, False otherwise
@@ -227,6 +247,12 @@ class CloudLoggingClient:
                     "error": step.error
                 }
             
+            # Add run_id and phase to step dict if provided
+            if run_id:
+                step_dict["run_id"] = run_id
+            if phase:
+                step_dict["phase"] = phase
+            
             # Create structured log entry
             log_entry = {
                 "severity": severity,
@@ -240,6 +266,12 @@ class CloudLoggingClient:
                 },
                 "json_payload": step_dict
             }
+            
+            # Add run_id and phase to labels if provided
+            if run_id:
+                log_entry["labels"]["run_id"] = run_id
+            if phase:
+                log_entry["labels"]["phase"] = phase
             
             # Log to Cloud Logging
             self.logger.log_struct(
@@ -266,26 +298,35 @@ def get_cloud_logging_client() -> CloudLoggingClient:
     return _cloud_logging_client
 
 
-def log_react_trace_to_cloud(trace: Any, severity: str = "INFO") -> bool:
+def log_react_trace_to_cloud(
+    trace: Any,
+    severity: str = "INFO",
+    run_id: Optional[str] = None,
+    phase: Optional[str] = None
+) -> bool:
     """
     Convenience function to log a ReAct trace to Cloud Logging.
     
     Args:
         trace: ReActTrace object
         severity: Log severity level
+        run_id: Optional run ID (e.g., Airflow DAG run ID)
+        phase: Optional phase identifier (e.g., "workflow_execution", "dashboard_generation")
         
     Returns:
         True if logged successfully, False otherwise
     """
     client = get_cloud_logging_client()
-    return client.log_react_trace(trace, severity)
+    return client.log_react_trace(trace, severity, run_id, phase)
 
 
 def log_react_step_to_cloud(
     step: Any,
     company_id: Optional[str] = None,
     query: Optional[str] = None,
-    severity: str = "INFO"
+    severity: str = "INFO",
+    run_id: Optional[str] = None,
+    phase: Optional[str] = None
 ) -> bool:
     """
     Convenience function to log a ReAct step to Cloud Logging.
@@ -300,5 +341,5 @@ def log_react_step_to_cloud(
         True if logged successfully, False otherwise
     """
     client = get_cloud_logging_client()
-    return client.log_step(step, company_id, query, severity)
+    return client.log_step(step, company_id, query, severity, run_id, phase)
 
