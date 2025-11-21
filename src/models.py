@@ -102,6 +102,22 @@ class Visibility(BaseModel):
     schema_version: str = "2.0.0"
     provenance: List[Provenance] = []
 
+class NewsArticle(BaseModel):
+    article_id: str
+    company_id: str
+    title: str
+    url: Optional[HttpUrl] = None
+    author: Optional[str] = None
+    date_published: Optional[str] = None
+    excerpt: Optional[str] = None
+    content: Optional[str] = None
+    categories: List[str] = []
+    tags: List[str] = []
+    word_count: Optional[int] = None
+    reading_time: Optional[int] = None
+    schema_version: str = "2.0.0"
+    provenance: List[Provenance] = []
+
 class Payload(BaseModel):
     company_record: Company
     events: List[Event] = []
@@ -109,5 +125,6 @@ class Payload(BaseModel):
     products: List[Product] = []
     leadership: List[Leadership] = []
     visibility: List[Visibility] = []
+    news_articles: List[NewsArticle] = []
     notes: Optional[str] = ""
     provenance_policy: Optional[str] = "Use only the sources you scraped. If a field is missing, write 'Not disclosed.' Do not infer valuation."

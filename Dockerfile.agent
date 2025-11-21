@@ -1,3 +1,4 @@
+# Dockerfile for Agent Service
 # Use Python 3.11 slim image for smaller size and security
 FROM python:3.11-slim
 
@@ -33,12 +34,12 @@ RUN useradd --create-home --shell /bin/bash app && \
 # Switch to non-root user
 USER app
 
-# Expose both ports (API and Streamlit)
-EXPOSE 8000 8501
+# Expose agent service port
+EXPOSE 8002
 
 # Health check to ensure the service is running
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8002}/health || exit 1
 
-# Default command for FastAPI (will be overridden by docker-compose for Streamlit)
-CMD ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# Default command - runs the standalone agent service
+CMD sh -c "exec uvicorn src.agent_service:app --host 0.0.0.0 --port ${PORT:-8002} --workers 1"
