@@ -1,0 +1,49 @@
+# Dockerfile for HITL Dashboard
+# Use Python 3.11 slim image for smaller size and security
+FROM python:3.11-slim
+
+# Set working directory in container
+WORKDIR /app
+
+# Install minimal system dependencies
+# RUN apt-get update --fix-missing || true && \
+#     apt-get install -y --no-install-recommends \
+#     curl \
+#     ca-certificates \
+#     && apt-get clean \
+#     && rm -rf /var/lib/apt/lists/* \
+#     && rm -rf /var/cache/apt/archives/*
+
+# Copy requirements first for better Docker layer caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Create src directory structure
+RUN mkdir -p src
+
+# Copy only the HITL dashboard file (no imports from src/, only HTTP calls and local file reads)
+COPY src/hitl_dashboard.py src/
+
+# Add src directory to Python path
+ENV PYTHONPATH=/app/src:/app
+
+# Create a non-root user for security
+RUN useradd --create-home --shell /bin/bash app && \
+    chown -R app:app /app
+
+# Switch to non-root user
+USER app
+
+# Expose HITL dashboard port
+EXPOSE 8502
+
+# Health check to ensure the service is running (using Python instead of curl)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8502/_stcore/health').read()" || exit 1
+
+# Default command for HITL Dashboard
+CMD ["streamlit", "run", "src/hitl_dashboard.py", "--server.port", "8502", "--server.address", "0.0.0.0"]
+
