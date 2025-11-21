@@ -16,9 +16,9 @@ from src.services.embeddings import Embeddings
 from src.structured_extraction import extract_company_payload
 from urllib.parse import urlparse
 from src.agents.workflow import WorkflowGraph, WorkflowState, WorkflowStatus
-from src.agents.supervisor import SupervisorAgent
 from src.agents.react_models import ReActTrace, ReActStep, ActionType
 from datetime import datetime
+import requests
 
 
 dotenv.load_dotenv()
@@ -873,11 +873,11 @@ async def generate_dashboard_with_agent(request: AgentDashboardRequest):
     Generate dashboard using Supervisor Agent + WorkflowGraph integration.
     
     This endpoint:
-    1. Uses SupervisorAgent with ReAct workflow to reason about the company and query
+    1. Calls Agent Service via HTTP to execute SupervisorAgent with ReAct workflow
     2. Executes WorkflowGraph to generate the dashboard through the graph-based workflow
     3. Returns both the agent trace and the generated dashboard
     
-    The SupervisorAgent first gathers information about the company using its tools,
+    The Agent Service first gathers information about the company using its tools,
     then the WorkflowGraph executes the full dashboard generation workflow with risk
     detection and HITL support.
     
@@ -890,14 +890,7 @@ async def generate_dashboard_with_agent(request: AgentDashboardRequest):
     try:
         start_time = datetime.now()
         
-        # Step 1: Initialize Supervisor Agent
-        agent = SupervisorAgent(
-            model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
-            max_iterations=10,
-            enable_llm_reasoning=True
-        )
-        
-        # Step 2: Get or extract company_id
+        # Step 1: Get or extract company_id
         logger.info(f"📋 Dashboard Generation Request Received")
         logger.info(f"   Requested Company Name: '{request.company_name}'")
         logger.info(f"   Requested Company ID: '{request.company_id}'")
@@ -919,36 +912,44 @@ async def generate_dashboard_with_agent(request: AgentDashboardRequest):
         logger.info(f"   📌 Final company_id for workflow: '{company_id}'")
         logger.info(f"   📌 Final company_name for workflow: '{request.company_name}'")
         
-        # Step 3: Execute Supervisor Agent query
+        # Step 2: Call Agent Service via HTTP
         query = request.query or f"Generate a comprehensive dashboard for {request.company_name}"
         
-        logger.info(f"🤖 Starting Supervisor Agent for query: '{query}' (company_id={company_id})")
-        agent_trace_obj = await agent.execute_query(query, company_id)
+        agent_base_url = os.getenv("AGENT_BASE", "http://localhost:8002")
+        logger.info(f"🤖 Calling Agent Service at {agent_base_url} for query: '{query}' (company_id={company_id})")
         
-        # Convert ReActTrace to dict for response
-        agent_trace = {
-            "query": agent_trace_obj.query,
-            "company_id": agent_trace_obj.company_id,
-            "final_answer": agent_trace_obj.final_answer,
-            "success": agent_trace_obj.success,
-            "total_steps": agent_trace_obj.total_steps,
-            "started_at": agent_trace_obj.started_at.isoformat(),
-            "completed_at": agent_trace_obj.completed_at.isoformat() if agent_trace_obj.completed_at else None,
-            "steps": [
-                {
-                    "step_number": step.step_number,
-                    "thought": step.thought,
-                    "action": step.action.value,
-                    "action_input": step.action_input,
-                    "observation": step.observation,
-                    "error": step.error,
-                    "timestamp": step.timestamp.isoformat()
-                }
-                for step in agent_trace_obj.steps
-            ]
-        }
-        
-        logger.info(f"Supervisor Agent completed: {agent_trace_obj.total_steps} steps, success={agent_trace_obj.success}")
+        try:
+            agent_response = requests.post(
+                f"{agent_base_url}/execute",
+                json={
+                    "query": query,
+                    "company_id": company_id
+                },
+                timeout=300  # 5 minute timeout for agent execution
+            )
+            agent_response.raise_for_status()
+            agent_data = agent_response.json()
+            
+            # Convert agent service response to agent_trace dict format
+            agent_trace = {
+                "query": agent_data["query"],
+                "company_id": agent_data["company_id"],
+                "final_answer": agent_data["final_answer"],
+                "success": agent_data["success"],
+                "total_steps": agent_data["total_steps"],
+                "started_at": agent_data["started_at"],
+                "completed_at": agent_data["completed_at"],
+                "steps": agent_data["steps"]
+            }
+            
+            logger.info(f"Supervisor Agent completed: {agent_data['total_steps']} steps, success={agent_data['success']}")
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error calling agent service: {e}")
+            raise HTTPException(
+                status_code=503,
+                detail=f"Agent service unavailable: {str(e)}"
+            )
         
         # Step 4: Execute WorkflowGraph to generate dashboard
         logger.info(f"🔄 Starting WorkflowGraph execution")
