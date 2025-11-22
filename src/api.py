@@ -1016,6 +1016,230 @@ async def generate_dashboard_with_agent(request: AgentDashboardRequest):
             detail=f"Failed to generate dashboard with agent: {str(e)}"
         )
 
+# ============================================================================
+# Airflow DAG Triggering Endpoints
+# ============================================================================
+
+@app.post("/api/trigger-dashboard-generation", tags=["Airflow"])
+async def trigger_dashboard_generation(request: dict):
+    """
+    Trigger Airflow DAG to generate dashboards for a company.
+    
+    Request body:
+    {
+        "company_name": "Anthropic",
+        "company_id": "anthropic"  # Optional
+    }
+    
+    Returns:
+    {
+        "dag_run_id": "manual__2025-11-20T10:30:00",
+        "status": "queued",
+        "message": "DAG triggered successfully"
+    }
+    """
+    try:
+        company_name = request.get('company_name')
+        if not company_name:
+            raise HTTPException(status_code=400, detail="company_name is required")
+        
+        # Airflow REST API endpoint
+        airflow_base_url = os.getenv("AIRFLOW_BASE_URL", "http://localhost:8080")
+        airflow_username = os.getenv("AIRFLOW_USERNAME", "airflow")
+        airflow_password = os.getenv("AIRFLOW_PASSWORD", "airflow")
+        
+        dag_id = "orbit_on_demand_dashboard_dag"
+        
+        # Prepare DAG run configuration
+        dag_run_config = {
+            "company_name": company_name
+        }
+        if request.get('company_id'):
+            dag_run_config["company_id"] = request.get('company_id')
+        
+        # Trigger DAG via REST API
+        import httpx
+        trigger_url = f"{airflow_base_url}/api/v1/dags/{dag_id}/dagRuns"
+        
+        logger.info(f"Triggering DAG {dag_id} for company: {company_name}")
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                trigger_url,
+                json={
+                    "dag_run_id": f"manual__{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                    "conf": dag_run_config
+                },
+                auth=(airflow_username, airflow_password),
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                dag_run_id = result.get("dag_run_id")
+                logger.info(f"✅ DAG triggered successfully: {dag_run_id}")
+                
+                return {
+                    "dag_run_id": dag_run_id,
+                    "status": result.get("state", "queued"),
+                    "message": f"Dashboard generation triggered for {company_name}",
+                    "company_name": company_name,
+                    "airflow_url": f"{airflow_base_url}/dags/{dag_id}/grid?dag_run_id={dag_run_id}"
+                }
+            else:
+                error_msg = response.text
+                logger.error(f"Failed to trigger DAG: {response.status_code} - {error_msg}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Failed to trigger DAG: {error_msg}"
+                )
+                
+    except httpx.RequestError as e:
+        logger.error(f"Connection error when triggering DAG: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Cannot connect to Airflow at {airflow_base_url}. Make sure Airflow is running."
+        )
+    except Exception as e:
+        logger.error(f"Error triggering DAG: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to trigger DAG: {str(e)}")
+
+@app.get("/api/dashboard-status/{dag_run_id}", tags=["Airflow"])
+async def get_dashboard_status(dag_run_id: str):
+    """
+    Check status of dashboard generation DAG run.
+    
+    Returns:
+    {
+        "dag_run_id": "...",
+        "state": "running|success|failed",
+        "task_states": {...},
+        "result": {...}  # If completed
+    }
+    """
+    try:
+        # Airflow REST API endpoint
+        airflow_base_url = os.getenv("AIRFLOW_BASE_URL", "http://localhost:8080")
+        airflow_username = os.getenv("AIRFLOW_USERNAME", "airflow")
+        airflow_password = os.getenv("AIRFLOW_PASSWORD", "airflow")
+        
+        dag_id = "orbit_on_demand_dashboard_dag"
+        
+        import httpx
+        
+        # Get DAG run status
+        dag_run_url = f"{airflow_base_url}/api/v1/dags/{dag_id}/dagRuns/{dag_run_id}"
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                dag_run_url,
+                auth=(airflow_username, airflow_password),
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Failed to get DAG run status: {response.text}"
+                )
+            
+            dag_run = response.json()
+            
+            # Get task states
+            task_instances_url = f"{airflow_base_url}/api/v1/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances"
+            task_response = await client.get(
+                task_instances_url,
+                auth=(airflow_username, airflow_password),
+                headers={"Content-Type": "application/json"}
+            )
+            
+            task_states = {}
+            if task_response.status_code == 200:
+                task_instances = task_response.json().get("task_instances", [])
+                for ti in task_instances:
+                    task_states[ti.get("task_id")] = ti.get("state", "unknown")
+            
+            result = {
+                "dag_run_id": dag_run_id,
+                "state": dag_run.get("state", "unknown"),
+                "start_date": dag_run.get("start_date"),
+                "end_date": dag_run.get("end_date"),
+                "task_states": task_states
+            }
+            
+            # If completed successfully, try to get result from final task
+            if dag_run.get("state") == "success":
+                try:
+                    # Get XCom from store_dashboards task
+                    xcom_url = f"{airflow_base_url}/api/v1/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/store_dashboards/xcomEntries/return_value"
+                    xcom_response = await client.get(
+                        xcom_url,
+                        auth=(airflow_username, airflow_password),
+                        headers={"Content-Type": "application/json"}
+                    )
+                    if xcom_response.status_code == 200:
+                        xcom_data = xcom_response.json()
+                        result["result"] = xcom_data.get("value")
+                except Exception as e:
+                    logger.warning(f"Could not fetch XCom result: {e}")
+            
+            return result
+            
+    except httpx.RequestError as e:
+        logger.error(f"Connection error when checking DAG status: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Cannot connect to Airflow. Make sure Airflow is running."
+        )
+    except Exception as e:
+        logger.error(f"Error getting DAG status: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get DAG status: {str(e)}")
+
+@app.post("/api/hitl-approve/{approval_id}", tags=["HITL"])
+async def approve_hitl(approval_id: str, request: dict):
+    """
+    Approve or reject HITL request.
+    
+    Request body:
+    {
+        "approved": true|false
+    }
+    
+    This saves the approval decision to GCS so the Airflow DAG can read it.
+    """
+    try:
+        approved = request.get('approved', False)
+        bucket_name = os.getenv("GCS_BUCKET_NAME", "project-orbit-data-12345")
+        
+        # Prepare approval data
+        approval_data = {
+            "approval_id": approval_id,
+            "approved": approved,
+            "decided_at": datetime.now().isoformat(),
+            "decided_by": request.get("decided_by", "api")  # Optional: who made the decision
+        }
+        
+        # Save to GCS
+        from gcs_utils import save_json_to_gcs
+        approval_path = f"hitl_approvals/{approval_id}.json"
+        
+        success = save_json_to_gcs(bucket_name, approval_data, approval_path)
+        
+        if success:
+            logger.info(f"✅ HITL approval decision saved: {approval_id} = {approved}")
+            return {
+                "approval_id": approval_id,
+                "approved": approved,
+                "message": "HITL decision recorded",
+                "gcs_path": f"gs://{bucket_name}/{approval_path}"
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to save approval decision to GCS")
+            
+    except Exception as e:
+        logger.error(f"Error recording HITL approval: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to record approval: {str(e)}")
+
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Health check endpoint"""
