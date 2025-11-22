@@ -76,11 +76,17 @@ if st.button("🚀 Generate with AI Agent", type="primary", use_container_width=
                 tab1, tab2, tab3, tab4 = st.tabs(["📊 Dashboard", "🤖 Agent Trace", "🔄 Workflow Execution", "📈 Summary"])
                 
                 with tab1:
-                    st.markdown("### Generated Dashboard")
-                    if result.get("dashboard"):
-                        st.markdown(result["dashboard"])
+                    # Only show dashboard if status is completed or paused_for_approval
+                    status = result.get("status", "")
+                    if status in ["completed", "paused_for_approval"]:
+                        st.markdown("### Generated Dashboard")
+                        if result.get("dashboard"):
+                            st.markdown(result["dashboard"])
+                        else:
+                            st.warning("No dashboard generated. Check workflow execution for details.")
                     else:
-                        st.warning("No dashboard generated. Check workflow execution for details.")
+                        st.error(f"❌ Dashboard generation failed. Status: {status}")
+                        st.info("Please check the Agent Trace and Workflow Execution tabs for error details.")
                 
                 with tab2:
                     st.markdown("### Supervisor Agent ReAct Trace")
